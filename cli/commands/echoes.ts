@@ -1,7 +1,8 @@
 import { type Props, print, cursor, gray, ask, choose, inputKey, yellow, white } from "bluebun"
-import { expressions, type Game, type SavedGames } from "../lib/types"
-import { map } from "../maps/forest"
+import { ActionResult, Actor, expressions, Tile, type Game, type SavedGames } from "../lib/types"
+import { map } from "../maps/dungeon"
 import { canSeeTile } from "../lib/utils"
+import { tryMove } from "../lib/behaviors"
 
 export default {
   name: "echoes",
@@ -71,78 +72,116 @@ export default {
     // cursor.show().write("\n")
     // console.log({ startPos })
 
-    // for now, we'll just make a new game each time
-    const game: Game = {
-      name: await ask("What is your character's name? "),
+    const character: Actor = {
       x: 2,
       y: 2,
-      // expression
-      e: "😑",
-      explored: map.tiles.map((row) => row.split("").map(() => false)),
+      expression: "sleeping",
+      name: await ask("What is your character's name? "),
+      type: "player",
     }
 
-    // bookmark the top left corner of the map
-    // const startPos = await cursor.queryPosition()
+    // alternate screen buffer
+    cursor.alternate(true).hide()
 
-    await cursor.bookmark("mapstart")
+    // for now, we'll just make a new game each time
+    const game: Game = {
+      map,
+      character,
+    }
+
+    // bookmark the top left corner of the map, which will be our game screen starting point
+    const startPos = await cursor.queryPosition()
+
+    cursor.bookmark("mapstart", { cols: startPos.cols, rows: startPos.rows + 1 })
 
     // print the map
     function drawMap() {
-      cursor.hide().jump("mapstart")
+      const discovered: Tile[] = []
+
+      cursor.jump("mapstart")
       map.tiles.forEach((row, y) => {
+        let line = ""
         for (let x = 0; x < row.length; x++) {
           const tile = row[x]
 
-          if (x === game.x && y === game.y) {
-            cursor.write(game.e)
+          if (x === game.character.x && y === game.character.y) {
+            line += expressions[game.character.expression]
             continue
           }
 
-          const visible = canSeeTile(map.tiles, game.x, game.y, x, y, 5)
+          const visible = canSeeTile(map, game.character.x, game.character.y, x, y, 5)
 
-          if (visible) game.explored[y][x] = true
+          if (visible && !tile.explored) {
+            tile.explored = true
+            discovered.push(tile)
+          }
 
-          const col = visible ? white : game.explored[y][x] ? gray : (s: string) => "  "
+          const col = visible ? white : tile.explored ? gray : (_: string) => "  "
 
-          if (tile === "#") {
-            cursor.write(col("██"))
-          } else if (tile === "/") {
+          if (tile.type === "#") {
+            line += col("██")
+          } else if (tile.type === "/") {
             // door
-            cursor.write(col("🚪"))
+            line += col("🚪")
+          } else if (tile.type === "\\") {
+            // open door
+            line += col("[]")
           } else {
-            cursor.write(col("··"))
+            line += col(gray("⬛️"))
           }
         }
-        cursor.write("\n")
+        cursor.write(line + "\n")
       })
+
+      return discovered
     }
 
-    // loop for input
+    // gameloop
     while (true) {
-      // change expression
-      game.e = expressions[Math.floor(Math.random() * expressions.length)]
-      drawMap()
+      const discovered = drawMap()
+
+      if (discovered.length > 0) {
+        // eventually, say something in the log that you see something
+        // for now, make the character surprised
+        const interestingDiscoveredTiles = ["/", "\\"]
+        const interesting = discovered.find((t) => interestingDiscoveredTiles.includes(t.type))
+        if (interesting) {
+          game.character.expression = "surprised"
+          drawMap() // draw again -- not very efficient, but it works for now
+        }
+      }
 
       const k = await inputKey()
 
-      if (k === "ctrl-c") break
-      if (k === "up") {
-        if (map.tiles[game.y - 1][game.x] === "#") continue
-        game.y--
+      // quitting
+      if (k === "escape") {
+        cursor.goto({ cols: startPos.cols + 10, rows: startPos.rows + 3 })
+        cursor.write("  Are you sure you want to quit? (y/n)  ")
+        const quit = await inputKey()
+        if (quit === "y") {
+          cursor.alternate(false).show()
+          break
+        }
+        continue
       }
-      if (k === "down") {
-        if (map.tiles[game.y + 1][game.x] === "#") continue
-        game.y++
-      }
-      if (k === "left") {
-        if (map.tiles[game.y][game.x - 1] === "#") continue
-        game.x--
-      }
-      if (k === "right") {
-        if (map.tiles[game.y][game.x + 1] === "#") continue
-        game.x++
-      }
+
+      let result: ActionResult = { verb: "stopped", tile: undefined }
+
+      // movement
+      if (k === "w") result = tryMove(0, -1, game)
+      if (k === "s") result = tryMove(0, 1, game)
+      if (k === "x") result = tryMove(0, 1, game)
+      if (k === "a") result = tryMove(-1, 0, game)
+      if (k === "d") result = tryMove(1, 0, game)
+      if (k === "q") result = tryMove(-1, -1, game)
+      if (k === "e") result = tryMove(1, -1, game)
+      if (k === "z") result = tryMove(-1, 1, game)
+      if (k === "c") result = tryMove(1, 1, game)
+
+      if (result.verb === "woke") game.character.expression = "sleepy"
+      if (result.verb === "stopped") game.character.expression = "surprised"
+      if (result.verb === "moved") game.character.expression = "happy"
+      if (result.verb === "opened") game.character.expression = "worried"
     }
-    cursor.show()
   },
 }
