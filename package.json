@@ -1,0 +1,21 @@
+{
+  "name": "echoes",
+  "devDependencies": {
+    "bun-types": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5.0.0"
+  },
+  "bin": {
+    "echoes": "./echoes"
+  },
+  "description": "Echoes in the Dark: a CLI adventure game powered by Bun",
+  "type": "module",
+  "dependencies": {
+    "bluebun": "^0.0.20"
+  },
+  "prettier": {
+    "semi": false,
+    "printWidth": 120
+  }
+}

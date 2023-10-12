@@ -1,0 +1,6 @@
+#!/usr/bin/env bun
+
+require("bluebun").run({
+  name: "echoes",
+  cliPath: __dirname + "/cli",
+});
