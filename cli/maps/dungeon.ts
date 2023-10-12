@@ -23,7 +23,7 @@ const tiles = `
   .map((row, y) =>
     row.map((tile, x) => ({
       type: tile,
-      explored: false,
+      discovered: false,
       items: [],
       actor: undefined,
       // x,

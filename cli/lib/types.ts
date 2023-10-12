@@ -16,12 +16,20 @@ export const expressions = {
   thinking: "🤔",
   surprised: "😲",
   laughing: "😆",
+
+  // npc's
+  goblin: "👺",
 }
 export type Expression = keyof typeof expressions
 
 export type Game = {
   character: Actor
+  actors: Actor[] // npc's, monsters, etc
   map: GameMap
+  width: number
+  height: number
+  playWidth: number
+  playHeight: number
 }
 
 export type SavedGames = {
@@ -37,7 +45,7 @@ export type Tile = {
   // x: number
   // y: number
   type: string
-  explored: boolean
+  discovered: boolean
   items: Item[]
   actor?: Actor
 }
@@ -54,6 +62,9 @@ export type Actor = {
   expression: Expression // mainly for the main character
   x: number
   y: number
+  speed: number // how many ticks I move forward each turn
+  time: number // what my current tick is
+  discovered: boolean
   // hp: number
   // maxHp: number
   // attack: number
@@ -62,6 +73,6 @@ export type Actor = {
 }
 
 export type ActionResult = {
-  verb: "stopped" | "opened" | "woke" | "moved"
+  verb: "stopped" | "opened" | "woke" | "moved" | "bumped"
   tile?: Tile
 }

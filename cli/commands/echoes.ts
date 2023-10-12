@@ -1,144 +1,91 @@
-import { type Props, print, cursor, gray, ask, choose, inputKey, yellow, white } from "bluebun"
+import { type Props, print, cursor, gray, ask, choose, inputKey, yellow, white, delay } from "bluebun"
 import { ActionResult, Actor, expressions, Tile, type Game, type SavedGames } from "../lib/types"
 import { map } from "../maps/dungeon"
-import { canSeeTile } from "../lib/utils"
 import { tryMove } from "../lib/behaviors"
+import { dialog } from "../lib/dialog"
+import { drawMap } from "../lib/drawMap"
+import { cancelAllAudio, playAudio } from "../lib/playAudio"
+
+// half second delay between movement inputs on purpose
+let inputDelay = 200
+let delayTimer: Promise<unknown> | undefined = undefined
 
 export default {
   name: "echoes",
   description: "Echoes the given arguments",
   run: async (props: Props) => {
-    // print(gray("\n\n\n      Echoes in the Dark\n\n\n"))
-
-    // // Get the folder where we save app data
-    // const savedir = await appdir()
-    // const savefile = savedir + "/echoes-saves.json"
-    // print(savefile)
-
-    // // Load any saved games
-    // let saved: SavedGames = {
-    //   games: [
-    //     {
-    //       name: "Empty 1",
-    //     },
-    //     {
-    //       name: "Empty 2",
-    //     },
-    //     {
-    //       name: "Empty 3",
-    //     },
-    //     {
-    //       name: "Empty 4",
-    //     },
-    //     {
-    //       name: "Empty 5",
-    //     },
-    //   ],
-    // }
-
-    // let game = saved.games[0]
-
-    // try {
-    //   saved = await Bun.file(savefile).json()
-    // } catch (e) {
-    //   // no saved games, so we'll just ignore this
-    // }
-
-    // // choose a save slot (of 5)
-    // print("Choose a save slot:")
-    // const slots = [
-    //   saved.games[0]?.name || "Empty 1",
-    //   saved.games[1]?.name || "Empty 2",
-    //   saved.games[2]?.name || "Empty 3",
-    //   saved.games[3]?.name || "Empty 4",
-    //   saved.games[4]?.name || "Empty 5",
-    // ]
-    // const slot = await choose(slots)
-
-    // game = saved.games.find((g) => g.name === slot) || game
-
-    // // if empty, ask for a name
-    // if (game.name.startsWith("Empty")) {
-    //   game.name = await ask("What is your character's name? ")
-    // }
-
-    // await fs.writeFile(savefile, JSON.stringify(saved))
-
-    // // print the saved games
-    // console.log(saved, savefile)
-
-    // get the cursor position
-    // const startPos = await cursor.queryPosition()
-    // cursor.show().write("\n")
-    // console.log({ startPos })
+    // register cleanup function when we exit
+    process.on("exit", (code) => {
+      // cleanup!
+      cursor.alternate(false).show()
+      cancelAllAudio()
+    })
 
     const character: Actor = {
-      x: 2,
-      y: 2,
+      x: 12,
+      y: 7,
       expression: "sleeping",
       name: await ask("What is your character's name? "),
       type: "player",
+      // 10 is normal, 20 is slow, 5 is fast, 1 is incredibly fast
+      speed: 10,
+      time: 0,
+      discovered: true,
     }
-
-    // alternate screen buffer
-    cursor.alternate(true).hide()
 
     // for now, we'll just make a new game each time
     const game: Game = {
       map,
       character,
+      actors: [
+        {
+          x: 10,
+          y: 10,
+          expression: "goblin",
+          name: "Goblin",
+          type: "npc",
+          speed: 10,
+          time: 1,
+          discovered: false,
+        },
+      ],
+      width: 80, // total width
+      height: 24, // total height
+      playWidth: 40,
+      playHeight: 20,
     }
+
+    // add every character to the tile they are standing on
+    ;[game.character, ...game.actors].forEach((actor) => {
+      const tile = game.map.tiles[actor.y][actor.x]
+      tile.actor = actor
+    })
+
+    cancelAllAudio() // just in case
+
+    if (process.stdout.columns < game.width || process.stdout.rows < game.height) {
+      print(yellow("Psst...make your terminal bigger! This game won't work very well at this size."))
+      print(
+        gray(
+          `(Your terminal is ${process.stdout.columns}x${process.stdout.rows}, and we need at least ${game.width}x${game.height})`
+        )
+      )
+      return
+    }
+
+    // alternate screen buffer
+    cursor.alternate(true).hide().write("\n")
 
     // bookmark the top left corner of the map, which will be our game screen starting point
     const startPos = await cursor.queryPosition()
 
     cursor.bookmark("mapstart", { cols: startPos.cols, rows: startPos.rows + 1 })
 
-    // print the map
-    function drawMap() {
-      const discovered: Tile[] = []
-
-      cursor.jump("mapstart")
-      map.tiles.forEach((row, y) => {
-        let line = ""
-        for (let x = 0; x < row.length; x++) {
-          const tile = row[x]
-
-          if (x === game.character.x && y === game.character.y) {
-            line += expressions[game.character.expression]
-            continue
-          }
-
-          const visible = canSeeTile(map, game.character.x, game.character.y, x, y, 5)
-
-          if (visible && !tile.explored) {
-            tile.explored = true
-            discovered.push(tile)
-          }
-
-          const col = visible ? white : tile.explored ? gray : (_: string) => "  "
-
-          if (tile.type === "#") {
-            line += col("██")
-          } else if (tile.type === "/") {
-            // door
-            line += col("🚪")
-          } else if (tile.type === "\\") {
-            // open door
-            line += col("[]")
-          } else {
-            line += col(gray("⬛️"))
-          }
-        }
-        cursor.write(line + "\n")
-      })
-
-      return discovered
-    }
+    playAudio(`${props.cliPath}/audio/music-01.wav`, { volume: 0.1, repeat: true })
 
     // gameloop
     while (true) {
-      const discovered = drawMap()
+      const discovered = drawMap(game)
 
       if (discovered.length > 0) {
         // eventually, say something in the log that you see something
@@ -147,41 +94,82 @@ export default {
         const interesting = discovered.find((t) => interestingDiscoveredTiles.includes(t.type))
         if (interesting) {
           game.character.expression = "surprised"
-          drawMap() // draw again -- not very efficient, but it works for now
+          continue // loop back around
         }
       }
 
+      // loop through every actor and see who is next to move
+      // sort by furthest behind in time
+      game.actors.sort((a, b) => a.time - b.time)
+      const actor = game.actors[0]
+      if (actor && actor.time < game.character.time) {
+        // move the actor
+        const result = tryMove(0, 0, game, actor)
+
+        // handle result
+        if (result.verb === "bumped") {
+          // do nothing for now, but eventually we'll have the actor do something
+          // like attack the player or talk to them or something
+        }
+
+        // advance the game time for the actor
+        actor.time += actor.speed
+
+        // loop back!
+        continue
+      }
+
+      // okay, my turn!
       const k = await inputKey()
+
+      // ensure we wait at least inputDelay before the next input
+      await delayTimer
+
+      // starts the delay timer over again
+      delayTimer = delay(inputDelay)
 
       // quitting
       if (k === "escape") {
-        cursor.goto({ cols: startPos.cols + 10, rows: startPos.rows + 3 })
-        cursor.write("  Are you sure you want to quit? (y/n)  ")
+        dialog(game, startPos, ["Are you sure you want to quit? (y/n)"])
         const quit = await inputKey()
-        if (quit === "y") {
-          cursor.alternate(false).show()
-          break
-        }
+        if (quit === "y") break
         continue
       }
 
       let result: ActionResult = { verb: "stopped", tile: undefined }
 
       // movement
-      if (k === "w") result = tryMove(0, -1, game)
-      if (k === "s") result = tryMove(0, 1, game)
-      if (k === "x") result = tryMove(0, 1, game)
-      if (k === "a") result = tryMove(-1, 0, game)
-      if (k === "d") result = tryMove(1, 0, game)
-      if (k === "q") result = tryMove(-1, -1, game)
-      if (k === "e") result = tryMove(1, -1, game)
-      if (k === "z") result = tryMove(-1, 1, game)
-      if (k === "c") result = tryMove(1, 1, game)
+      if (k === "w") result = tryMove(0, -1, game, game.character)
+      if (k === "s") result = tryMove(0, 1, game, game.character)
+      if (k === "x") result = tryMove(0, 1, game, game.character)
+      if (k === "a") result = tryMove(-1, 0, game, game.character)
+      if (k === "d") result = tryMove(1, 0, game, game.character)
+      if (k === "q") result = tryMove(-1, -1, game, game.character)
+      if (k === "e") result = tryMove(1, -1, game, game.character)
+      if (k === "z") result = tryMove(-1, 1, game, game.character)
+      if (k === "c") result = tryMove(1, 1, game, game.character)
 
-      if (result.verb === "woke") game.character.expression = "sleepy"
+      // you know, i should probably use xstate for these transition effects
+      if (result.verb === "woke") {
+        game.character.expression = "sleepy"
+        dialog(game, startPos, ["You wake up."])
+        await inputKey()
+        game.character.time += game.character.speed
+        continue
+      }
       if (result.verb === "stopped") game.character.expression = "surprised"
-      if (result.verb === "moved") game.character.expression = "happy"
-      if (result.verb === "opened") game.character.expression = "worried"
+      if (result.verb === "moved") {
+        game.character.expression = "worried"
+        // advance the game time for the character
+        game.character.time += game.character.speed
+        playAudio(`${props.cliPath}/audio/footstep.wav`, { volume: 0.5 })
+      }
+      if (result.verb === "opened") {
+        game.character.expression = "thinking"
+        // playAudio(`${props.cliPath}/audio/door.wav`, { volume: 0.5 })
+        // advance the game time for the character
+        game.character.time += game.character.speed
+      }
     }
   },
 }

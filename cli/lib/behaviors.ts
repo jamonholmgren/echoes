@@ -1,36 +1,44 @@
-import type { ActionResult, Game } from "./types"
+import type { ActionResult, Actor, Game } from "./types"
 
-export function tryMove(mx: number, my: number, game: Game): ActionResult {
+export function tryMove(mx: number, my: number, game: Game, actor: Actor): ActionResult {
   // first off, if the character is sleeping, wake them up
-  if (game.character.expression === "sleeping") {
+  if (actor.expression === "sleeping") {
     return { verb: "woke", tile: undefined }
   }
 
+  // get the current tile
+  const currentTile = game.map.tiles[actor.y][actor.x]
+
   // try to move into the square
-  const x = game.character.x + mx
-  const y = game.character.y + my
+  const destinationX = actor.x + mx
+  const destinationY = actor.y + my
 
-  const tile = game.map.tiles[y][x]
+  const destinationTile = game.map.tiles[destinationY][destinationX]
 
-  if (!tile) return { verb: "stopped", tile }
+  if (!destinationTile) return { verb: "stopped", tile: destinationTile }
+
+  // if there's another actor there return that
+  if (destinationTile.actor) return { verb: "bumped", tile: destinationTile }
 
   // if it's a wall, stop
-  if (tile.type === "#") {
-    // change the emoji to surprised
-    game.character.expression = "surprised"
-    return { verb: "stopped", tile }
-  }
+  if (destinationTile.type === "#") return { verb: "stopped", tile: destinationTile }
 
   // if it's a door, open it
-  if (tile.type === "/") {
+  if (destinationTile.type === "/") {
     // change the wall to open door (backslash)
-    tile.type = "\\"
-    return { verb: "opened", tile }
+    destinationTile.type = "\\"
+    return { verb: "opened", tile: destinationTile }
   }
 
-  // otherwise, let's move
-  game.character.x = x
-  game.character.y = y
+  // otherwise, let's move to the destination square
+  actor.x = destinationX
+  actor.y = destinationY
 
-  return { verb: "moved", tile }
+  // remove the actor from its current tile
+  if (currentTile.actor === actor) currentTile.actor = undefined
+
+  // let's set this tile's actor to the actor
+  destinationTile.actor = actor
+
+  return { verb: "moved", tile: destinationTile }
 }
