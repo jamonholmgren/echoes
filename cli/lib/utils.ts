@@ -70,3 +70,11 @@ export function isLineOfSightClear(map: GameMap, x0: number, y0: number, x1: num
 export function chooseOne<T>(arr: T[]): T {
   return arr[Math.floor(Math.random() * arr.length)]
 }
+
+export function alternateColors(t: string, color1: (s: string) => string, color2: (s: string) => string): string {
+  let r = ""
+  t.split("").forEach((c, i) => {
+    r += i % 2 === 0 ? color1(c) : color2(c)
+  })
+  return r
+}

@@ -1,13 +1,15 @@
 import { CursorPos, cursor, gray, green, white } from "bluebun"
 import { Game, Tile, expressions } from "./types"
-import { canSeeTile } from "./utils"
+import { alternateColors, canSeeTile } from "./utils"
 
 // print the map (assumes it's against the left side of the screen always)
 export function drawMap(game: Game) {
   const discovered: Tile[] = []
 
   // hardcoded for now
-  cursor.jump("mapstart").write(gray("Echoes in the Dark") + "\n\n")
+  // cursor.jump("mapstart").write(gray("Echoes in the Dark") + "\n\n")
+  // Echoes in the Dark but written in pseudo different font scary
+  cursor.jump("mapstart").write(alternateColors(`Echoes in the Dark`, white, gray) + "\n\n")
 
   // we center the map on the character
   // remember that tiles are 2 cols wide and 1 row tall
@@ -89,7 +91,9 @@ function drawHUD(game: Game) {
 
   hud(3, green(`  ${c.name} ${expressions[c.expression]}`))
   hud(4, `  Pos: ${c.x}x${c.y}`)
-  hud(5, ``)
+  hud(5, `  Time: ${c.time}`)
+  hud(6, `  Speed: ${c.speed}`)
+  hud(7, ``)
 }
 
 function hud(row: number, s: string) {
