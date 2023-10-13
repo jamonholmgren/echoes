@@ -1,10 +1,11 @@
 import { type Props, print, cursor, gray, ask, choose, inputKey, yellow, white, delay } from "bluebun"
-import { ActionResult, Actor, expressions, Tile, type Game, type SavedGames } from "../lib/types"
+import { ActionResult, Actor, expressions, Tile, type Game, type SavedGames, Expression } from "../lib/types"
 import { map } from "../maps/dungeon"
 import { tryMove } from "../lib/behaviors"
 import { dialog } from "../lib/dialog"
 import { drawMap } from "../lib/drawMap"
 import { cancelAllAudio, playAudio } from "../lib/playAudio"
+import { chooseOne } from "../lib/utils"
 
 // half second delay between movement inputs on purpose
 let inputDelay = 200
@@ -49,7 +50,8 @@ export default {
       interfaceHeight: 24, // total height
       viewWidth: 40,
       viewHeight: 20,
-      sound: (await choose(["sound on", "sound off"])) === "sound on",
+      sound: false,
+      // sound: (await choose(["sound on", "sound off"])) === "sound on",
     }
 
     // register cleanup function when we exit
@@ -88,7 +90,14 @@ export default {
     if (game.sound) playAudio(`${props.cliPath}/audio/music-01.wav`, { volume: 0.1, repeat: true })
 
     // gameloop
+    let runawayLoopProtection = 0
     while (true) {
+      runawayLoopProtection++
+      if (runawayLoopProtection > 1000) {
+        console.error(game)
+        throw new Error("runaway game loop detected, exiting")
+      }
+
       const discovered = drawMap(game)
 
       if (discovered.length > 0) {
@@ -96,9 +105,9 @@ export default {
         // for now, make the character surprised
         const interestingDiscoveredTiles = ["/", "\\"]
         const interesting = discovered.find((t) => interestingDiscoveredTiles.includes(t.type))
-        if (interesting) {
+        if (interesting && game.character.expression !== "surprised") {
           game.character.expression = "surprised"
-          continue // loop back around
+          continue // loop back around so we can rerender
         }
       }
 
@@ -125,6 +134,8 @@ export default {
 
       // okay, my turn!
       const k = await inputKey()
+
+      // cursor.goto({ rows: 2, cols: 2 }).write("random: " + k)
 
       // ensure we wait at least inputDelay before the next input
       await delayTimer
@@ -163,7 +174,7 @@ export default {
       }
       if (result.verb === "stopped") game.character.expression = "surprised"
       if (result.verb === "moved") {
-        game.character.expression = "worried"
+        game.character.expression = chooseOne<Expression>(["neutral", "worried"])
         // advance the game time for the character
         game.character.time += game.character.speed
         if (game.sound) playAudio(`${props.cliPath}/audio/footstep.wav`, { volume: 0.5 })
@@ -174,6 +185,7 @@ export default {
         // advance the game time for the character
         game.character.time += game.character.speed
       }
+      runawayLoopProtection = 0
     }
   },
 }

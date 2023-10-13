@@ -38,10 +38,11 @@ export function drawMap(game: Game) {
         continue
       }
 
-      const visible = canSeeTile(map, game.character.x, game.character.y, x, y, 5)
+      const visible = canSeeTile(map, game.character.x, game.character.y, x, y, 10)
 
-      if (visible && (!tile.discovered || !tile.actor?.discovered)) {
+      if (visible && (!tile.discovered || tile.actor?.discovered === false)) {
         tile.discovered = true
+        if (tile.actor) tile.actor.discovered = true
         discovered.push(tile)
       }
 
@@ -59,9 +60,10 @@ export function drawMap(game: Game) {
         line += col("🚪")
       } else if (tile.type === "\\") {
         // open door
-        line += col("[]")
+        line += col("🀆 ")
       } else {
-        line += col(gray("⬛️"))
+        // line += col(gray("⬛️"))
+        line += col("··")
       }
     }
     cursor.write("│" + line + "│\n")

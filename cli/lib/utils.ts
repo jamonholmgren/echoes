@@ -66,3 +66,7 @@ export function isLineOfSightClear(map: GameMap, x0: number, y0: number, x1: num
 
   return true
 }
+
+export function chooseOne<T>(arr: T[]): T {
+  return arr[Math.floor(Math.random() * arr.length)]
+}
