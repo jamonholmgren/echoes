@@ -1,4 +1,4 @@
-export const expressions = {
+export const moods = {
   sleeping: "😴",
   sleepy: "🥱",
   neutral: "😐",
@@ -7,7 +7,6 @@ export const expressions = {
   strained: "😣",
   sad: "😞",
   hurt: "😣",
-  dead: "💀",
   injured: "🤕",
   confused: "😕",
   angry: "😡",
@@ -16,11 +15,15 @@ export const expressions = {
   thinking: "🤔",
   surprised: "😲",
   laughing: "😆",
-
-  // npc's
-  goblin: "👺",
+  dead: "💀",
 }
-export type Expression = keyof typeof expressions
+export type Mood = keyof typeof moods
+
+export const races = {
+  human: "👤",
+  goblin: "👹",
+}
+export type Race = keyof typeof races
 
 export type Game = {
   character: Actor
@@ -59,21 +62,18 @@ export type Item = {
 
 export type Actor = {
   name: string
-  type: "player" | "npc"
-  expression: Expression // mainly for the main character
+  race: Race
+  mood: Mood
   x: number
   y: number
+  eyesight: number // how far can I see
   speed: number // how many ticks I move forward each turn
   time: number // what my current tick is
   discovered: boolean
-  // hp: number
-  // maxHp: number
-  // attack: number
-  // defense: number
-  // inventory: Item[]
+  act?: (game: Game) => Promise<ActionResult>
 }
 
 export type ActionResult = {
-  verb: "stopped" | "opened" | "woke" | "moved" | "bumped"
+  verb: "stopped" | "opened" | "woke" | "moved" | "bumped" | "slept"
   tile?: Tile
 }

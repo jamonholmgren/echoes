@@ -1,23 +1,24 @@
-import { CursorPos, cursor, gray, green, white } from "bluebun"
-import { Game, Tile, expressions } from "./types"
+import { CursorPos, bold, cursor, gray, green, white } from "bluebun"
+import { Game, Tile, moods, races } from "./types"
 import { alternateColors, canSeeTile } from "./utils"
 
 // print the map (assumes it's against the left side of the screen always)
 export function drawMap(game: Game) {
+  const c = game.character
   const discovered: Tile[] = []
 
   // hardcoded for now
   // cursor.jump("mapstart").write(gray("Echoes in the Dark") + "\n\n")
   // Echoes in the Dark but written in pseudo different font scary
-  cursor.jump("mapstart").write(alternateColors(`Echoes in the Dark`, white, gray) + "\n\n")
+  cursor.jump("mapstart").write(`${white(`Echoes`)} in the ${gray("Dark")}` + "\n\n")
 
   // we center the map on the character
   // remember that tiles are 2 cols wide and 1 row tall
   // but we do not take that into account here!
   const map = game.map
-  const left = game.character.x - Math.floor(game.viewWidth / 2)
+  const left = c.x - Math.floor(game.viewWidth / 2)
   const right = left + game.viewWidth
-  const top = game.character.y - Math.floor(game.viewHeight / 2)
+  const top = c.y - Math.floor(game.viewHeight / 2)
   const bottom = top + game.viewHeight
 
   // print the map
@@ -40,7 +41,7 @@ export function drawMap(game: Game) {
         continue
       }
 
-      const visible = canSeeTile(map, game.character.x, game.character.y, x, y, 10)
+      const visible = canSeeTile(map, c.x, c.y, x, y, c.eyesight)
 
       if (visible && (!tile.discovered || tile.actor?.discovered === false)) {
         tile.discovered = true
@@ -49,7 +50,11 @@ export function drawMap(game: Game) {
       }
 
       if (visible && tile.actor) {
-        line += expressions[tile.actor.expression]
+        if (tile.actor.race === "human") {
+          line += moods[tile.actor.mood]
+        } else {
+          line += races[tile.actor.race]
+        }
         continue
       }
 
@@ -89,7 +94,7 @@ function drawHUD(game: Game) {
     rows: mapStart.rows,
   }
 
-  hud(3, green(`  ${c.name} ${expressions[c.expression]}`))
+  hud(3, green(`  ${c.name} ${moods[c.mood]}`))
   hud(4, `  Pos: ${c.x}x${c.y}`)
   hud(5, `  Time: ${c.time}`)
   hud(6, `  Speed: ${c.speed}`)

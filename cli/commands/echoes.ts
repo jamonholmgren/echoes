@@ -1,11 +1,12 @@
 import { type Props, print, cursor, gray, ask, choose, inputKey, yellow, white, delay } from "bluebun"
-import { ActionResult, Actor, expressions, Tile, type Game, type SavedGames, Expression } from "../lib/types"
+import { ActionResult, Actor, moods, Tile, type Game, type SavedGames, Mood } from "../lib/types"
 import { map } from "../maps/dungeon"
 import { tryMove } from "../lib/behaviors"
 import { dialog } from "../lib/dialog"
 import { drawMap } from "../lib/drawMap"
 import { cancelAllAudio, playAudio } from "../lib/playAudio"
 import { chooseOne } from "../lib/utils"
+import { goblin } from "../npcs/goblin"
 
 // half second delay between movement inputs on purpose
 let inputDelay = 200
@@ -18,9 +19,10 @@ export default {
     const character: Actor = {
       x: 12,
       y: 7,
-      expression: "sleeping",
+      mood: "sleeping",
       name: await ask("What is your character's name? "),
-      type: "player",
+      race: "human",
+      eyesight: 14,
       // 10 is normal, 20 is slow, 5 is fast, 1 is incredibly fast
       speed: 10,
       time: 0,
@@ -34,18 +36,7 @@ export default {
     const game: Game = {
       map,
       character,
-      actors: [
-        {
-          x: 10,
-          y: 10,
-          expression: "goblin",
-          name: "Goblin",
-          type: "npc",
-          speed: 10,
-          time: 1,
-          discovered: false,
-        },
-      ],
+      actors: [goblin({ x: 10, y: 10 })],
       interfaceWidth: 80, // total width
       interfaceHeight: 24, // total height
       viewWidth: 40,
@@ -105,8 +96,8 @@ export default {
         // for now, make the character surprised
         const interestingDiscoveredTiles = ["/", "\\"]
         const interesting = discovered.find((t) => interestingDiscoveredTiles.includes(t.type))
-        if (interesting && game.character.expression !== "surprised") {
-          game.character.expression = "surprised"
+        if (interesting && game.character.mood !== "surprised") {
+          game.character.mood = "surprised"
           continue // loop back around so we can rerender
         }
       }
@@ -116,13 +107,17 @@ export default {
       game.actors.sort((a, b) => a.time - b.time)
       const actor = game.actors[0]
       if (actor && actor.time < game.character.time) {
-        // move the actor
-        const result = tryMove(0, 0, game, actor)
+        // it's the actor's turn
+        if (actor.act) {
+          // small delay before every actor
+          await delay(250)
+          const result = await actor.act(game)
 
-        // handle result
-        if (result.verb === "bumped") {
-          // do nothing for now, but eventually we'll have the actor do something
-          // like attack the player or talk to them or something
+          // handle result
+          if (result.verb === "bumped") {
+            // do nothing for now, but eventually we'll have the actor do something
+            // like attack the player or talk to them or something
+          }
         }
 
         // advance the game time for the actor
@@ -166,21 +161,21 @@ export default {
 
       // you know, i should probably use xstate for these transition effects
       if (result.verb === "woke") {
-        game.character.expression = "sleepy"
+        game.character.mood = "sleepy"
         dialog(game, startPos, ["You wake up."])
         await inputKey()
         game.character.time += game.character.speed
         continue
       }
-      if (result.verb === "stopped") game.character.expression = "surprised"
+      if (result.verb === "stopped") game.character.mood = "surprised"
       if (result.verb === "moved") {
-        game.character.expression = chooseOne<Expression>(["neutral", "worried"])
+        game.character.mood = chooseOne<Mood>(["neutral", "worried"])
         // advance the game time for the character
         game.character.time += game.character.speed
         if (game.sound) playAudio(`${props.cliPath}/audio/footstep.wav`, { volume: 0.5 })
       }
       if (result.verb === "opened") {
-        game.character.expression = "thinking"
+        game.character.mood = "thinking"
         // if (game.sound) playAudio(`${props.cliPath}/audio/door.wav`, { volume: 0.5 })
         // advance the game time for the character
         game.character.time += game.character.speed

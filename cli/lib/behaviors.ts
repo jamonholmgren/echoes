@@ -2,7 +2,7 @@ import type { ActionResult, Actor, Game } from "./types"
 
 export function tryMove(mx: number, my: number, game: Game, actor: Actor): ActionResult {
   // first off, if the character is sleeping, wake them up
-  if (actor.expression === "sleeping") {
+  if (actor.mood === "sleeping") {
     return { verb: "woke", tile: undefined }
   }
 
