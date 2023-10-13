@@ -1,4 +1,4 @@
-import { cursor, gray, white } from "bluebun"
+import { CursorPos, cursor, gray, green, white } from "bluebun"
 import { Game, Tile, expressions } from "./types"
 import { canSeeTile } from "./utils"
 
@@ -13,19 +13,19 @@ export function drawMap(game: Game) {
   // remember that tiles are 2 cols wide and 1 row tall
   // but we do not take that into account here!
   const map = game.map
-  const left = game.character.x - Math.floor(game.playWidth / 2)
-  const right = left + game.playWidth
-  const top = game.character.y - Math.floor(game.playHeight / 2)
-  const bottom = top + game.playHeight
+  const left = game.character.x - Math.floor(game.viewWidth / 2)
+  const right = left + game.viewWidth
+  const top = game.character.y - Math.floor(game.viewHeight / 2)
+  const bottom = top + game.viewHeight
 
   // print the map
   // print the top border
-  cursor.write("┌" + "──".repeat(game.playWidth) + "┐\n")
+  cursor.write("┌" + "──".repeat(game.viewWidth) + "┐\n")
   for (let y = top; y < bottom; y++) {
     const row = map.tiles[y]
     if (!row) {
       // make sure to draw the border too
-      cursor.write("│" + "  ".repeat(game.playWidth) + "│\n")
+      cursor.write("│" + "  ".repeat(game.viewWidth) + "│\n")
       continue
     }
 
@@ -67,7 +67,29 @@ export function drawMap(game: Game) {
     cursor.write("│" + line + "│\n")
   }
   // print the bottom border
-  cursor.write("└" + "─".repeat(game.playWidth * 2) + "┘\n")
+  cursor.write("└" + "─".repeat(game.viewWidth * 2) + "┘\n")
+
+  drawHUD(game)
 
   return discovered
+}
+
+let hudPos: CursorPos
+function drawHUD(game: Game) {
+  const mapStart = cursor.getBookmark("mapstart")
+
+  const c = game.character
+
+  hudPos = {
+    cols: mapStart.cols + game.viewWidth * 2 + 2,
+    rows: mapStart.rows,
+  }
+
+  hud(3, green(`  ${c.name} ${expressions[c.expression]}`))
+  hud(4, `  Pos: ${c.x}x${c.y}`)
+  hud(5, ``)
+}
+
+function hud(row: number, s: string) {
+  cursor.goto(hudPos).down(row).write(s)
 }

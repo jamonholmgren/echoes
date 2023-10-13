@@ -26,10 +26,11 @@ export type Game = {
   character: Actor
   actors: Actor[] // npc's, monsters, etc
   map: GameMap
-  width: number
-  height: number
-  playWidth: number
-  playHeight: number
+  interfaceWidth: number // total terminal width we're working with
+  interfaceHeight: number // total terminal height we are working with
+  viewWidth: number // width of the map we are showing (x2 for character width)
+  viewHeight: number // height of the map we are showing
+  sound: boolean
 }
 
 export type SavedGames = {

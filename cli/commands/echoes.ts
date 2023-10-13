@@ -14,13 +14,6 @@ export default {
   name: "echoes",
   description: "Echoes the given arguments",
   run: async (props: Props) => {
-    // register cleanup function when we exit
-    process.on("exit", (code) => {
-      // cleanup!
-      cursor.alternate(false).show()
-      cancelAllAudio()
-    })
-
     const character: Actor = {
       x: 12,
       y: 7,
@@ -32,6 +25,9 @@ export default {
       time: 0,
       discovered: true,
     }
+
+    // TODO: fix issue that requires setting this
+    await cursor.bookmark("ask-start")
 
     // for now, we'll just make a new game each time
     const game: Game = {
@@ -49,11 +45,19 @@ export default {
           discovered: false,
         },
       ],
-      width: 80, // total width
-      height: 24, // total height
-      playWidth: 40,
-      playHeight: 20,
+      interfaceWidth: 80, // total width
+      interfaceHeight: 24, // total height
+      viewWidth: 40,
+      viewHeight: 20,
+      sound: (await choose(["sound on", "sound off"])) === "sound on",
     }
+
+    // register cleanup function when we exit
+    process.on("exit", (code) => {
+      // cleanup!
+      cursor.alternate(false).show()
+      if (game.sound) cancelAllAudio()
+    })
 
     // add every character to the tile they are standing on
     ;[game.character, ...game.actors].forEach((actor) => {
@@ -63,11 +67,11 @@ export default {
 
     cancelAllAudio() // just in case
 
-    if (process.stdout.columns < game.width || process.stdout.rows < game.height) {
+    if (process.stdout.columns < game.interfaceWidth || process.stdout.rows < game.interfaceHeight) {
       print(yellow("Psst...make your terminal bigger! This game won't work very well at this size."))
       print(
         gray(
-          `(Your terminal is ${process.stdout.columns}x${process.stdout.rows}, and we need at least ${game.width}x${game.height})`
+          `(Your terminal is ${process.stdout.columns}x${process.stdout.rows}, and we need at least ${game.interfaceWidth}x${game.interfaceHeight})`
         )
       )
       return
@@ -81,7 +85,7 @@ export default {
 
     cursor.bookmark("mapstart", { cols: startPos.cols, rows: startPos.rows + 1 })
 
-    playAudio(`${props.cliPath}/audio/music-01.wav`, { volume: 0.1, repeat: true })
+    if (game.sound) playAudio(`${props.cliPath}/audio/music-01.wav`, { volume: 0.1, repeat: true })
 
     // gameloop
     while (true) {
@@ -162,11 +166,11 @@ export default {
         game.character.expression = "worried"
         // advance the game time for the character
         game.character.time += game.character.speed
-        playAudio(`${props.cliPath}/audio/footstep.wav`, { volume: 0.5 })
+        if (game.sound) playAudio(`${props.cliPath}/audio/footstep.wav`, { volume: 0.5 })
       }
       if (result.verb === "opened") {
         game.character.expression = "thinking"
-        // playAudio(`${props.cliPath}/audio/door.wav`, { volume: 0.5 })
+        // if (game.sound) playAudio(`${props.cliPath}/audio/door.wav`, { volume: 0.5 })
         // advance the game time for the character
         game.character.time += game.character.speed
       }

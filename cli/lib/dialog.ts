@@ -5,8 +5,8 @@ export function dialog(game: Game, topleft: CursorPos, lines: string[]) {
   const widestString = lines.reduce((a, b) => (a.length > b.length ? a : b), "")
   const dialogWidth = widestString.length + 4
   const dialogHeight = lines.length + 2
-  const mapViewportWidth = game.playWidth * 2
-  const mapViewportHeight = game.playHeight
+  const mapViewportWidth = game.viewWidth * 2
+  const mapViewportHeight = game.viewHeight
 
   const left = Math.ceil((mapViewportWidth - dialogWidth) / 2) + topleft.cols
   const top = Math.ceil((mapViewportHeight - dialogHeight) / 2) + topleft.rows
