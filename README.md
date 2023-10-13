@@ -1,15 +1,21 @@
-# echos
+# Echoes in the Dark
 
-To install dependencies:
+Echoes in the Dark is a roguelike terminal adventure game, created by Jamon Holmgren.
 
-```bash
-bun install
-```
+It's currently under development. Star this repo to keep tabs on progress!
 
-To run:
+<img width="500" alt="Echoes in the Dark" src="https://github.com/jamonholmgren/echoes/assets/1479215/99b3dbd0-daaf-4ddf-a5e7-5a22d21bdafb">
 
-```bash
-bun run index.ts
-```
+## Playing
 
-This project was created using `bun init` in bun v1.0.4. [Bun](https://bun.sh) is a fast all-in-one JavaScript runtime.
+Note that Echoes in the Dark only works on macOS at the moment, although Windows and Linux support is planned.
+
+Installation and playing instructions will be added here once the game is released.
+
+## The Story
+
+Coming soon
+
+## License
+
+This software is copyright 2023 Jamon Holmgren. All rights reserved.
