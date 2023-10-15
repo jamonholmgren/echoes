@@ -2,6 +2,7 @@ import type { Actor } from "../lib/types"
 import { wander } from "../actions/wander"
 import { follow } from "../actions/follow"
 import { canSeeTile } from "../lib/utils"
+import { sleep } from "../actions/sleep"
 
 export function goblin(props: Partial<Actor>): Actor {
   return {
@@ -16,9 +17,9 @@ export function goblin(props: Partial<Actor>): Actor {
     history: [],
 
     discovered: false,
-    async act(game) {
+    act(game) {
       const tile = game.map.tiles[this.y][this.x]
-      if (!tile.discovered) return { verb: "slept", tile }
+      if (!tile.discovered) return sleep(this, game)
 
       // can I see the player?
       const visible = canSeeTile(game.map, this.x, this.y, game.character.x, game.character.y, this.eyesight)

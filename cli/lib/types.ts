@@ -70,7 +70,7 @@ export type Actor = {
   speed: number // how many ticks I move forward each turn
   time: number // what my current tick is
   discovered: boolean
-  act?: (game: Game) => Promise<ActionResult>
+  act?: (game: Game) => ActionResult
   history: ActionResult[]
 }
 

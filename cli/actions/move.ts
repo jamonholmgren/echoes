@@ -1,10 +1,9 @@
 import type { ActionResult, Actor, Game } from "../lib/types"
+import { beforeAction } from "./_before"
 
-export function tryMove(mx: number, my: number, game: Game, actor: Actor): ActionResult {
-  // first off, if the character is sleeping, wake them up
-  if (actor.mood === "sleeping") {
-    return { verb: "woke", tile: undefined }
-  }
+export function move(mx: number, my: number, game: Game, actor: Actor): ActionResult {
+  const pre = beforeAction(actor, game)
+  if (pre.verb !== "pending") return pre
 
   // get the current tile
   const currentTile = game.map.tiles[actor.y][actor.x]
@@ -37,8 +36,11 @@ export function tryMove(mx: number, my: number, game: Game, actor: Actor): Actio
   // remove the actor from its current tile
   if (currentTile.actor === actor) currentTile.actor = undefined
 
-  // let's set this tile's actor to the actor
+  // set this new tile's actor to the actor
   destinationTile.actor = actor
+
+  // advance time for the actor
+  actor.time += actor.speed
 
   return { verb: "moved", tile: destinationTile }
 }
