@@ -71,9 +71,10 @@ export type Actor = {
   time: number // what my current tick is
   discovered: boolean
   act?: (game: Game) => Promise<ActionResult>
+  history: ActionResult[]
 }
 
 export type ActionResult = {
-  verb: "stopped" | "opened" | "woke" | "moved" | "bumped" | "slept"
+  verb: "pending" | "stopped" | "opened" | "woke" | "moved" | "bumped" | "slept"
   tile?: Tile
 }

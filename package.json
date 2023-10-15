@@ -1,6 +1,7 @@
 {
   "name": "echoes",
   "license": "none",
+  "version": "0.0.1",
   "devDependencies": {
     "bun-types": "latest"
   },

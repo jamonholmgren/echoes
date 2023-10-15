@@ -1,6 +1,8 @@
-import { CursorPos, bold, cursor, gray, green, white } from "bluebun"
+import { CursorPos, bgBrightBlack, bgGray, bgRed, cursor, gray, green, white, bgColorHex } from "bluebun"
 import { Game, Tile, moods, races } from "./types"
-import { alternateColors, canSeeTile } from "./utils"
+import { canSeeTile } from "./utils"
+
+const bgDarkGray = bgColorHex("#232323")
 
 // print the map (assumes it's against the left side of the screen always)
 export function drawMap(game: Game) {
@@ -51,26 +53,34 @@ export function drawMap(game: Game) {
 
       if (visible && tile.actor) {
         if (tile.actor.race === "human") {
-          line += moods[tile.actor.mood]
+          line += bgDarkGray(moods[tile.actor.mood])
         } else {
           line += races[tile.actor.race]
         }
         continue
       }
 
-      const col = visible ? white : tile.discovered ? gray : (_: string) => "  "
+      const col = visible ? bgDarkGray : tile.discovered ? gray : (_: string) => "  "
 
       if (tile.type === "#") {
-        line += col("██")
+        // not sure which of these wall icons is best
+        // line += col(gray("⬛️"))
+        // line += col("██")
+        // line += col("▓▓")
+        line += col("░░")
+        // line += col("▒▒")
+        // line += col("██")
       } else if (tile.type === "/") {
         // door
         line += col("🚪")
       } else if (tile.type === "\\") {
         // open door
-        line += col("🀆 ")
+        line += col("🚪")
       } else {
+        // not sure which of these is best
         // line += col(gray("⬛️"))
-        line += col("··")
+        line += col(gray("··"))
+        // line += col("  ")
       }
     }
     cursor.write("│" + line + "│\n")

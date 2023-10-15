@@ -1,7 +1,7 @@
 import { type Props, print, cursor, gray, ask, choose, inputKey, yellow, white, delay, inputKeys } from "bluebun"
 import { ActionResult, Actor, moods, Tile, type Game, type SavedGames, Mood } from "../lib/types"
 import { map } from "../maps/dungeon"
-import { tryMove } from "../lib/behaviors"
+import { tryMove } from "../actions/tryMove"
 import { dialog } from "../lib/dialog"
 import { drawMap } from "../lib/drawMap"
 import { cancelAllAudio, playAudio } from "../lib/playAudio"
@@ -12,23 +12,57 @@ import { goblin } from "../npcs/goblin"
 let inputDelay = 200
 let delayTimer: Promise<unknown> | undefined = undefined
 
+const interfaceWidth = 80 // total width
+const interfaceHeight = 24 // total height
+
 export default {
   name: "echoes",
   description: "Echoes the given arguments",
   run: async (props: Props) => {
     cursor.write(`\nWelcome to Echoes of the Dark!\n\n`)
 
+    if (process.stdout.columns < interfaceWidth || process.stdout.rows < interfaceHeight) {
+      print(yellow("Psst...make your terminal bigger! This game won't work very well at this size."))
+      print(
+        gray(
+          `(Your terminal is ${process.stdout.columns}x${process.stdout.rows}, and we need at least ${interfaceWidth}x${interfaceHeight})`
+        )
+      )
+      return
+    }
+
+    if (process.env.TERM_PROGRAM === "Apple_Terminal") {
+      print(yellow("\nPsst...you're using Apple's Terminal.app. This game won't work very well in that.\n"))
+      print(gray(`Try Visual Studio Code's built-in terminal or Warp instead!`))
+      print(gray("It might also work with iTerm2, but I have not tested it"))
+      print(gray("The reason is because Terminal doesn't support background"))
+      print(gray("colors nor hex/rgb colors, which this game uses.\n"))
+      return
+    }
+
+    // get the character starting position from the map
+    const { x, y } = map.tiles.reduce(
+      (acc, row, y) => row.reduce((acc, tile, x) => (tile.type === "☻" ? { x, y } : acc), acc),
+      { x: 0, y: 0 }
+    )
+
+    if (x === 0 && y === 0) throw new Error("Could not find starting position for character")
+
+    const name = await ask("What is your character's name? ")
+    cursor.write("Turn on sound? (y/n)")
+    const sound = (await chooseKey(["y", "n"])) === "y"
+
     const character: Actor = {
-      x: 12,
-      y: 7,
+      x,
+      y,
       mood: "sleeping",
-      name: await ask("What is your character's name? "),
+      name,
       race: "human",
       eyesight: 14,
-      // 10 is normal, 20 is slow, 5 is fast, 1 is incredibly fast
       speed: 10,
       time: 0,
       discovered: true,
+      history: [],
     }
 
     // for now, we'll just make a new game each time
@@ -36,24 +70,23 @@ export default {
       map,
       character,
       actors: [goblin({ x: 10, y: 10 })],
-      interfaceWidth: 80, // total width
-      interfaceHeight: 24, // total height
+      interfaceWidth,
+      interfaceHeight,
       viewWidth: 40,
       viewHeight: 20,
-      // sound: false,
-      sound: (cursor.write("Sound? (y/n)") && (await inputKey())) === "y",
+      sound,
     }
 
     function cleanup() {
       // cleanup!
       cursor.alternate(false).show().write(`
-      
-      I hope you enjoyed Echoes of the Dark!
 
-      If you have any feedback, please let me know on Twitter: https://x.com/jamonholmgren
+I hope you enjoyed Echoes of the Dark!
 
-      I'd love to hear from you!
-      
+If you have any feedback, please let me know on Twitter: https://x.com/jamonholmgren
+
+I'd love to hear from you!
+
       \n`)
 
       cancelAllAudio()
@@ -70,26 +103,17 @@ export default {
 
     cancelAllAudio() // just in case
 
-    if (process.stdout.columns < game.interfaceWidth || process.stdout.rows < game.interfaceHeight) {
-      print(yellow("Psst...make your terminal bigger! This game won't work very well at this size."))
-      print(
-        gray(
-          `(Your terminal is ${process.stdout.columns}x${process.stdout.rows}, and we need at least ${game.interfaceWidth}x${game.interfaceHeight})`
-        )
-      )
-      return
-    }
-
     // alternate screen buffer
-    cursor.alternate(true).hide().write("\n")
+    cursor.alternate(true)
 
-    // TODO: fix issue that requires setting this
-    await cursor.write("\n").bookmark("ask-start")
+    await delay(1)
+
+    cursor.hide().clearScreen()
 
     // bookmark the top left corner of the map, which will be our game screen starting point
-    const startPos = await cursor.queryPosition()
+    const startPos = { cols: 1, rows: 1 }
 
-    cursor.bookmark("mapstart", { cols: startPos.cols, rows: startPos.rows + 1 })
+    cursor.bookmark("mapstart", { cols: startPos.cols, rows: startPos.rows + 2 })
 
     if (game.sound) playAudio(`${props.cliPath}/audio/music-01.wav`, { volume: 0.1, repeat: true })
 
@@ -159,7 +183,7 @@ export default {
         continue
       }
 
-      let result: ActionResult = { verb: "stopped", tile: undefined }
+      let result: ActionResult = { verb: "pending", tile: undefined }
 
       // movement
       if (k === "w") result = tryMove(0, -1, game, game.character)
@@ -180,18 +204,23 @@ export default {
         game.character.time += game.character.speed
         continue
       }
-      if (result.verb === "stopped") game.character.mood = "surprised"
+      if (result.verb === "stopped") {
+        game.character.mood = "surprised"
+      }
       if (result.verb === "moved") {
         game.character.mood = chooseOne<Mood>(["neutral", "worried"])
         // advance the game time for the character
-        game.character.time += game.character.speed
+
         if (game.sound) playAudio(`${props.cliPath}/audio/footstep.wav`, { volume: 0.5 })
       }
       if (result.verb === "opened") {
         game.character.mood = "thinking"
         // if (game.sound) playAudio(`${props.cliPath}/audio/door.wav`, { volume: 0.5 })
-        // advance the game time for the character
-        game.character.time += game.character.speed
+      }
+
+      // no actions taken
+      if (result.verb === "pending") {
+        // do nothing
       }
       runawayLoopProtection = 0
     }

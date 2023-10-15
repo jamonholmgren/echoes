@@ -1,6 +1,6 @@
-import { CursorPos } from "bluebun"
-import { ActionResult, Actor } from "../lib/types"
-import { follow, wander } from "./actions"
+import type { Actor } from "../lib/types"
+import { wander } from "../actions/wander"
+import { follow } from "../actions/follow"
 import { canSeeTile } from "../lib/utils"
 
 export function goblin(props: Partial<Actor>): Actor {
@@ -13,6 +13,7 @@ export function goblin(props: Partial<Actor>): Actor {
     speed: 12,
     time: 0,
     eyesight: 8,
+    history: [],
 
     discovered: false,
     async act(game) {
