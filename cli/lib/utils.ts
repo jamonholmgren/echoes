@@ -68,6 +68,12 @@ export function isLineOfSightClear(map: GameMap, x0: number, y0: number, x1: num
   return true
 }
 
+export function distance(pos1: { x: number; y: number }, pos2: { x: number; y: number }): number {
+  const dx = pos1.x - pos2.x
+  const dy = pos1.y - pos2.y
+  return Math.sqrt(dx * dx + dy * dy)
+}
+
 export function chooseOne<T>(arr: T[]): T {
   return arr[Math.floor(Math.random() * arr.length)]
 }
@@ -85,3 +91,12 @@ export async function chooseKey<T extends string>(validKeys: readonly T[]): Prom
 }
 
 export const waitSpace = () => chooseKey([" "])
+
+const _errors: string[] = []
+export function logError(msg: string) {
+  _errors.push(msg)
+}
+
+export function getErrors() {
+  return _errors
+}

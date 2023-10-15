@@ -1,10 +1,11 @@
-import { type Props, print, cursor, gray, ask, yellow, delay } from "bluebun"
+import { type Props, print, cursor, gray, ask, yellow, delay, inputKey } from "bluebun"
 import type { Actor, Game } from "../lib/types"
 import { map } from "../maps/dungeon"
 import { cancelAllAudio } from "../lib/playAudio"
-import { chooseKey } from "../lib/utils"
-import { goblin } from "../npcs/goblin"
+import { chooseKey, getErrors } from "../lib/utils"
+import { makeGoblin } from "../actors/goblin"
 import { gameLoop } from "../gameplay/gameLoop"
+import { makeCharacter } from "../actors/character"
 
 const interfaceWidth = 80 // total width
 const interfaceHeight = 24 // total height
@@ -48,24 +49,17 @@ export default {
     cursor.write("Turn on sound? (y/n)")
     const sound = (await chooseKey(["y", "n"])) === "y"
 
-    const character: Actor = {
-      x,
-      y,
-      mood: "sleeping",
-      name,
-      race: "human",
-      eyesight: 14,
-      speed: 10,
-      time: 0,
-      discovered: true,
-      history: [],
-    }
+    const character = makeCharacter({ x, y, name })
 
     // for now, we'll just make a new game each time
     const game: Game = {
       map,
+      // we keep a special reference to the main character
       character,
-      actors: [goblin({ x: 10, y: 10 })],
+      // but they're also just a normal actor in some ways
+      actors: [character, makeGoblin({ x: 10, y: 10 })],
+      // bookmark the top left corner of the map, which will be our game screen starting point
+      startPos: { cols: 1, rows: 1 },
       interfaceWidth,
       interfaceHeight,
       viewWidth: 40,
@@ -84,7 +78,13 @@ If you have any feedback, please let me know on Twitter: https://x.com/jamonholm
 
 I'd love to hear from you!
 
-      \n`)
+---
+${getErrors()
+  .map((e, i) => `Error ${i}:\n${e}`)
+  .join("\n\n")}
+---
+
+`)
 
       cancelAllAudio()
     }
@@ -93,7 +93,7 @@ I'd love to hear from you!
     process.on("exit", cleanup)
 
     // add every character to the tile they are standing on
-    ;[game.character, ...game.actors].forEach((actor) => {
+    game.actors.forEach((actor) => {
       const tile = game.map.tiles[actor.y][actor.x]
       tile.actor = actor
     })
@@ -108,8 +108,5 @@ I'd love to hear from you!
     cursor.hide().clearScreen()
 
     await gameLoop(game, props)
-
-    cleanup()
-    process.exit(0)
   },
 }

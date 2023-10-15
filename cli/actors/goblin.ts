@@ -4,7 +4,7 @@ import { follow } from "../actions/follow"
 import { canSeeTile } from "../lib/utils"
 import { sleep } from "../actions/sleep"
 
-export function goblin(props: Partial<Actor>): Actor {
+export function makeGoblin(props: Partial<Actor>): Actor {
   return {
     x: 1,
     y: 1,
@@ -17,8 +17,10 @@ export function goblin(props: Partial<Actor>): Actor {
     history: [],
 
     discovered: false,
-    act(game) {
+    async act(game) {
       const tile = game.map.tiles[this.y][this.x]
+
+      // until the goblin is discovered, it just sleeps
       if (!tile.discovered) return sleep(this, game)
 
       // can I see the player?

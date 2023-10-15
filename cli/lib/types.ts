@@ -1,3 +1,5 @@
+import type { CursorPos } from "bluebun"
+
 export const moods = {
   sleeping: "😴",
   sleepy: "🥱",
@@ -33,6 +35,7 @@ export type Game = {
   interfaceHeight: number // total terminal height we are working with
   viewWidth: number // width of the map we are showing (x2 for character width)
   viewHeight: number // height of the map we are showing
+  startPos: CursorPos
   sound: boolean
 }
 
@@ -70,11 +73,13 @@ export type Actor = {
   speed: number // how many ticks I move forward each turn
   time: number // what my current tick is
   discovered: boolean
-  act?: (game: Game) => ActionResult
+  act?: (game: Game) => Promise<ActionResult>
   history: ActionResult[]
 }
 
 export type ActionResult = {
-  verb: "pending" | "stopped" | "rested" | "opened" | "woke" | "moved" | "bumped" | "slept"
+  verb: "pending" | "stopped" | "rested" | "opened" | "woke" | "moved" | "bumped" | "slept" | "fell asleep"
   tile?: Tile
+  startTime?: number
+  endTime?: number
 }
