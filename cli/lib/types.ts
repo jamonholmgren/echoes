@@ -75,6 +75,6 @@ export type Actor = {
 }
 
 export type ActionResult = {
-  verb: "pending" | "stopped" | "opened" | "woke" | "moved" | "bumped" | "slept"
+  verb: "pending" | "stopped" | "rested" | "opened" | "woke" | "moved" | "bumped" | "slept"
   tile?: Tile
 }

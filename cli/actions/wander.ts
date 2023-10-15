@@ -1,13 +1,12 @@
 import type { ActionResult, Actor, Game } from "../lib/types"
 import { move } from "./move"
-import { beforeAction } from "./_before"
+import { wake } from "./wake"
 
 /**
  * Default 'wandering' behavior
  */
-export function wander(actor: Actor, game: Game): ActionResult {
-  const pre = beforeAction(actor, game)
-  if (pre.verb !== "pending") return pre
+export async function wander(actor: Actor, game: Game): Promise<ActionResult> {
+  if (actor.mood === "sleeping") return wake(actor, game)
 
   // current tile
   const tile = game.map.tiles[actor.y][actor.x]

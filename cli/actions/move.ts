@@ -1,9 +1,8 @@
 import type { ActionResult, Actor, Game } from "../lib/types"
-import { beforeAction } from "./_before"
+import { wake } from "./wake"
 
-export function move(mx: number, my: number, game: Game, actor: Actor): ActionResult {
-  const pre = beforeAction(actor, game)
-  if (pre.verb !== "pending") return pre
+export async function move(mx: number, my: number, game: Game, actor: Actor): Promise<ActionResult> {
+  if (actor.mood === "sleeping") return wake(actor, game)
 
   // get the current tile
   const currentTile = game.map.tiles[actor.y][actor.x]

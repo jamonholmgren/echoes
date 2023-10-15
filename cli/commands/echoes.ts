@@ -4,7 +4,7 @@ import { map } from "../maps/dungeon"
 import { cancelAllAudio } from "../lib/playAudio"
 import { chooseKey } from "../lib/utils"
 import { goblin } from "../npcs/goblin"
-import { gameLoop } from "../gameplay/main"
+import { gameLoop } from "../gameplay/gameLoop"
 
 const interfaceWidth = 80 // total width
 const interfaceHeight = 24 // total height

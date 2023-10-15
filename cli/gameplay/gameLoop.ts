@@ -68,15 +68,15 @@ export async function gameLoop(game: Game, props: Props) {
     let result: ActionResult = { verb: "pending", tile: undefined }
 
     // movement
-    if (k === "w") result = move(0, -1, game, game.character)
-    if (k === "s") result = move(0, 0, game, game.character) // rest
-    if (k === "x") result = move(0, 1, game, game.character)
-    if (k === "a") result = move(-1, 0, game, game.character)
-    if (k === "d") result = move(1, 0, game, game.character)
-    if (k === "q") result = move(-1, -1, game, game.character)
-    if (k === "e") result = move(1, -1, game, game.character)
-    if (k === "z") result = move(-1, 1, game, game.character)
-    if (k === "c") result = move(1, 1, game, game.character)
+    if (k === "w") result = await move(0, -1, game, game.character)
+    if (k === "s") result = await move(0, 0, game, game.character) // rest
+    if (k === "x") result = await move(0, 1, game, game.character)
+    if (k === "a") result = await move(-1, 0, game, game.character)
+    if (k === "d") result = await move(1, 0, game, game.character)
+    if (k === "q") result = await move(-1, -1, game, game.character)
+    if (k === "e") result = await move(1, -1, game, game.character)
+    if (k === "z") result = await move(-1, 1, game, game.character)
+    if (k === "c") result = await move(1, 1, game, game.character)
 
     // you know, i should probably use xstate for these transition effects
     if (result.verb === "woke") {

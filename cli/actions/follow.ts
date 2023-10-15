@@ -1,14 +1,13 @@
 import type { Actor, Game, ActionResult } from "../lib/types"
 import { chooseOne } from "../lib/utils"
-import { beforeAction } from "./_before"
 import { move } from "./move"
+import { wake } from "./wake"
 
 /**
  * Follow another character
  */
-export function follow(actor: Actor, target: Actor, game: Game): ActionResult {
-  const pre = beforeAction(actor, game)
-  if (pre.verb !== "pending") return pre
+export async function follow(actor: Actor, target: Actor, game: Game): Promise<ActionResult> {
+  if (actor.mood === "sleeping") return wake(actor, game)
 
   // current tile
   const tile = game.map.tiles[actor.y][actor.x]
