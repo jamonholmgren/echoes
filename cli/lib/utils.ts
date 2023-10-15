@@ -1,6 +1,7 @@
 import os from "os"
 import path from "path"
 import { type GameMap } from "./types"
+import { choose, inputKeys } from "bluebun"
 
 export function appdir() {
   const homedir = os.homedir()
@@ -78,3 +79,9 @@ export function alternateColors(t: string, color1: (s: string) => string, color2
   })
   return r
 }
+
+export async function chooseKey<T extends string>(validKeys: readonly T[]): Promise<T> {
+  return await inputKeys((k) => (validKeys.includes(k as T) ? (k as T) : undefined))
+}
+
+export const waitSpace = () => chooseKey([" "])

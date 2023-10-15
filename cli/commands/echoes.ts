@@ -1,11 +1,11 @@
-import { type Props, print, cursor, gray, ask, choose, inputKey, yellow, white, delay } from "bluebun"
+import { type Props, print, cursor, gray, ask, choose, inputKey, yellow, white, delay, inputKeys } from "bluebun"
 import { ActionResult, Actor, moods, Tile, type Game, type SavedGames, Mood } from "../lib/types"
 import { map } from "../maps/dungeon"
 import { tryMove } from "../lib/behaviors"
 import { dialog } from "../lib/dialog"
 import { drawMap } from "../lib/drawMap"
 import { cancelAllAudio, playAudio } from "../lib/playAudio"
-import { chooseOne } from "../lib/utils"
+import { chooseOne, chooseKey } from "../lib/utils"
 import { goblin } from "../npcs/goblin"
 
 // half second delay between movement inputs on purpose
@@ -16,6 +16,8 @@ export default {
   name: "echoes",
   description: "Echoes the given arguments",
   run: async (props: Props) => {
+    cursor.write(`\nWelcome to Echoes of the Dark!\n\n`)
+
     const character: Actor = {
       x: 12,
       y: 7,
@@ -29,9 +31,6 @@ export default {
       discovered: true,
     }
 
-    // TODO: fix issue that requires setting this
-    await cursor.bookmark("ask-start")
-
     // for now, we'll just make a new game each time
     const game: Game = {
       map,
@@ -41,16 +40,27 @@ export default {
       interfaceHeight: 24, // total height
       viewWidth: 40,
       viewHeight: 20,
-      sound: false,
-      // sound: (await choose(["sound on", "sound off"])) === "sound on",
+      // sound: false,
+      sound: (cursor.write("Sound? (y/n)") && (await inputKey())) === "y",
+    }
+
+    function cleanup() {
+      // cleanup!
+      cursor.alternate(false).show().write(`
+      
+      I hope you enjoyed Echoes of the Dark!
+
+      If you have any feedback, please let me know on Twitter: https://x.com/jamonholmgren
+
+      I'd love to hear from you!
+      
+      \n`)
+
+      cancelAllAudio()
     }
 
     // register cleanup function when we exit
-    process.on("exit", (code) => {
-      // cleanup!
-      cursor.alternate(false).show()
-      if (game.sound) cancelAllAudio()
-    })
+    process.on("exit", cleanup)
 
     // add every character to the tile they are standing on
     ;[game.character, ...game.actors].forEach((actor) => {
@@ -72,6 +82,9 @@ export default {
 
     // alternate screen buffer
     cursor.alternate(true).hide().write("\n")
+
+    // TODO: fix issue that requires setting this
+    await cursor.write("\n").bookmark("ask-start")
 
     // bookmark the top left corner of the map, which will be our game screen starting point
     const startPos = await cursor.queryPosition()
@@ -130,18 +143,18 @@ export default {
       // okay, my turn!
       const k = await inputKey()
 
-      // cursor.goto({ rows: 2, cols: 2 }).write("random: " + k)
-
       // ensure we wait at least inputDelay before the next input
+      // this is to prevent the player from moving too fast
+      // however, any processing delay will be taken into account
       await delayTimer
 
-      // starts the delay timer over again
+      // starts the delay timer over again immediately
       delayTimer = delay(inputDelay)
 
       // quitting
       if (k === "escape") {
         dialog(game, startPos, ["Are you sure you want to quit? (y/n)"])
-        const quit = await inputKey()
+        const quit = await chooseKey(["y", "n"])
         if (quit === "y") break
         continue
       }
@@ -150,7 +163,7 @@ export default {
 
       // movement
       if (k === "w") result = tryMove(0, -1, game, game.character)
-      if (k === "s") result = tryMove(0, 1, game, game.character)
+      if (k === "s") result = tryMove(0, 0, game, game.character) // rest
       if (k === "x") result = tryMove(0, 1, game, game.character)
       if (k === "a") result = tryMove(-1, 0, game, game.character)
       if (k === "d") result = tryMove(1, 0, game, game.character)
@@ -182,5 +195,8 @@ export default {
       }
       runawayLoopProtection = 0
     }
+
+    cleanup()
+    process.exit(0)
   },
 }

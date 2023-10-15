@@ -85,7 +85,7 @@ export function drawMap(game: Game) {
 
 let hudPos: CursorPos
 function drawHUD(game: Game) {
-  const mapStart = cursor.getBookmark("mapstart")
+  const mapStart = cursor.bookmarks["mapstart"]
 
   const c = game.character
 
