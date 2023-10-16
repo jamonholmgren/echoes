@@ -1,8 +1,25 @@
-import { CursorPos, bgBrightBlack, bgGray, bgRed, cursor, gray, green, white, bgColorHex } from "bluebun"
+import {
+  CursorPos,
+  bgBrightBlack,
+  bgGray,
+  bgRed,
+  cursor,
+  gray,
+  green,
+  white,
+  bgColorHex,
+  black,
+  bgColorEnd,
+  colorEnd,
+  inputKey,
+  colorStart,
+  ansiColors,
+  bgColorHexStart,
+} from "bluebun"
 import { Game, Tile, moods, races } from "./types"
-import { canSeeTile } from "./utils"
+import { canSeeTile, logError } from "./utils"
 
-const bgDarkGray = bgColorHex("#232323")
+const bgDarkGray = bgColorHexStart("#232323")
 
 // print the map (assumes it's against the left side of the screen always)
 export function drawMap(game: Game) {
@@ -35,6 +52,9 @@ export function drawMap(game: Game) {
     }
 
     let line = ""
+    let curCol = ""
+    let curBg = ""
+
     for (let x = left; x < right; x++) {
       const tile = row[x]
 
@@ -51,39 +71,61 @@ export function drawMap(game: Game) {
         discovered.push(tile)
       }
 
+      const bgCol = visible ? colorStart(ansiColors.gray + 10) : tile.discovered ? bgDarkGray : bgColorEnd
+
+      if (curBg !== bgCol) {
+        line += bgCol
+        curBg = bgCol
+      }
+
       if (visible && tile.actor) {
         if (tile.actor.race === "human") {
-          line += bgDarkGray(moods[tile.actor.mood])
+          line += moods[tile.actor.mood]
         } else {
           line += races[tile.actor.race]
         }
         continue
+      } else if (!visible && !tile.discovered) {
+        line += "  "
+        continue
       }
-
-      const col = visible ? bgDarkGray : tile.discovered ? gray : (_: string) => "  "
 
       if (tile.type === "#") {
         // not sure which of these wall icons is best
         // line += col(gray("⬛️"))
         // line += col("██")
         // line += col("▓▓")
-        line += col("░░")
+
+        if (curCol != colorEnd) {
+          line += colorEnd
+          curCol = colorEnd
+        }
+
+        line += "░░"
         // line += col("▒▒")
         // line += col("██")
       } else if (tile.type === "/") {
         // door
-        line += col("🚪")
+        line += "🚪"
       } else if (tile.type === "\\") {
         // open door
-        line += col("🚪")
+        line += "🚪"
       } else {
         // not sure which of these is best
         // line += col(gray("⬛️"))
-        line += col(gray("··"))
+        const g = colorStart(ansiColors.gray)
+        if (curCol != g) {
+          line += g
+          curCol = g
+        }
+
+        line += "··"
         // line += col("  ")
       }
     }
-    cursor.write("│" + line + "│\n")
+    cursor.write("│" + line + colorEnd + bgColorEnd + "│\n")
+
+    // logError(JSON.stringify(line, null, 2))
   }
   // print the bottom border
   cursor.write("└" + "─".repeat(game.viewWidth * 2) + "┘\n")
