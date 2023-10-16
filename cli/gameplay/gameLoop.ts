@@ -1,9 +1,9 @@
 import type { Game } from "../lib/types"
-import { Props, cursor } from "bluebun"
+import { Props, cursor, gray } from "bluebun"
 import { drawMap } from "../lib/drawMap"
 import { playAudio } from "../lib/playAudio"
 import { updateNextActor } from "./updateNextActor"
-import { logError } from "../lib/utils"
+import { logError, waitSpace } from "../lib/utils"
 
 export async function gameLoop(game: Game, props: Props) {
   cursor.bookmark("mapstart", { cols: game.startPos.cols, rows: game.startPos.rows + 2 })
@@ -26,8 +26,8 @@ export async function gameLoop(game: Game, props: Props) {
       // for now, make the character surprised
       const interestingDiscoveredTiles = ["/", "\\"]
       const interesting = discovered.find((t) => interestingDiscoveredTiles.includes(t.type))
-      if (interesting && game.character.mood !== "surprised") {
-        game.character.mood = "surprised"
+      if (interesting && game.me.mood !== "surprised" && game.me.mood !== "sleeping") {
+        game.me.mood = "surprised"
         continue // loop back around so we can rerender
       }
     }

@@ -2,10 +2,11 @@ import { type Props, print, cursor, gray, ask, yellow, delay, inputKey } from "b
 import type { Actor, Game } from "../lib/types"
 import { map } from "../maps/dungeon"
 import { cancelAllAudio } from "../lib/playAudio"
-import { chooseKey, getErrors } from "../lib/utils"
+import { chooseKey, getErrors, logError } from "../lib/utils"
 import { makeGoblin } from "../actors/goblin"
 import { gameLoop } from "../gameplay/gameLoop"
 import { makeCharacter } from "../actors/character"
+import { guardActors } from "../lib/guards"
 
 const interfaceWidth = 80 // total width
 const interfaceHeight = 24 // total height
@@ -55,7 +56,7 @@ export default {
     const game: Game = {
       map,
       // we keep a special reference to the main character
-      character,
+      me: character,
       // but they're also just a normal actor in some ways
       actors: [character, makeGoblin({ x: 10, y: 10 })],
       // bookmark the top left corner of the map, which will be our game screen starting point
@@ -92,10 +93,21 @@ ${getErrors()
     // register cleanup function when we exit
     process.on("exit", cleanup)
 
+    guardActors(game)
+
     // add every character to the tile they are standing on
     game.actors.forEach((actor) => {
       const tile = game.map.tiles[actor.y][actor.x]
+
+      if (!tile) {
+        logError(`Actor ${actor.name} is not on a tile! This is a bug.`)
+        logError(`Actor info: ${JSON.stringify(actor, null, 2)}`)
+        process.exit(1)
+      }
+
+      // doubly linked objects
       tile.actor = actor
+      actor.tile = tile
     })
 
     cancelAllAudio() // just in case

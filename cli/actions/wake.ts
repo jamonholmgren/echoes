@@ -16,5 +16,6 @@ export async function wake(actor: Actor, game: Game): Promise<ActionResult> {
   }
 
   actor.mood = "sleepy"
+
   return { verb: "woke", tile: undefined }
 }

@@ -1,8 +1,8 @@
-import { CursorPos, cursor, inputKey } from "bluebun"
+import { CursorPos, cursor, inputKey, stripANSI } from "bluebun"
 import { type Game } from "./types"
 
 export function dialog(game: Game, lines: string[]) {
-  const widestString = lines.reduce((a, b) => (a.length > b.length ? a : b), "")
+  const widestString = lines.reduce((a, b) => (stripANSI(a).length > stripANSI(b).length ? a : b), "")
   const dialogWidth = widestString.length + 4
   const dialogHeight = lines.length + 2
   const mapViewportWidth = game.viewWidth * 2
@@ -15,7 +15,7 @@ export function dialog(game: Game, lines: string[]) {
   cursor.goto({ cols: left, rows: top }).write("┌" + "─".repeat(dialogWidth) + "┐")
   for (let i = 0; i < dialogHeight - 2; i++) {
     const text = lines[i]
-    const padding = " ".repeat(dialogWidth - 2 - text.length)
+    const padding = " ".repeat(dialogWidth - 2 - stripANSI(text).length)
     cursor.goto({ cols: left, rows: top + 1 + i }).write("│" + "  " + text + padding + "│")
   }
   cursor.goto({ cols: left, rows: top + dialogHeight - 1 }).write("└" + "─".repeat(dialogWidth) + "┘")

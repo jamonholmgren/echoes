@@ -6,6 +6,7 @@ import { sleep } from "../actions/sleep"
 
 export function makeGoblin(props: Partial<Actor>): Actor {
   return {
+    me: false,
     x: 1,
     y: 1,
     race: "goblin",
@@ -15,8 +16,9 @@ export function makeGoblin(props: Partial<Actor>): Actor {
     time: 0,
     eyesight: 8,
     history: [],
-
+    visible: false,
     discovered: false,
+    tags: {},
     async act(game) {
       const tile = game.map.tiles[this.y][this.x]
 
@@ -24,16 +26,17 @@ export function makeGoblin(props: Partial<Actor>): Actor {
       if (!tile.discovered) return sleep(this, game)
 
       // can I see the player?
-      const visible = canSeeTile(game.map, this.x, this.y, game.character.x, game.character.y, this.eyesight)
+      const visible = canSeeTile(game.map, this.x, this.y, game.me.x, game.me.y, this.eyesight)
 
       if (visible) {
         // go towards the player
-        return follow(this, game.character, game)
+        return follow(this, game.me, game)
       } else {
         // just wander
         return wander(this, game)
       }
     },
+    on: {},
     ...props,
   }
 }

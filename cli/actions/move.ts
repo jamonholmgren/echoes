@@ -1,6 +1,6 @@
+import type { ActionResult, Actor, Game, Mood } from "../lib/types"
 import { playAudio } from "../lib/playAudio"
-import type { ActionResult, Actor, Game } from "../lib/types"
-import { distance } from "../lib/utils"
+import { chooseOne, distance } from "../lib/utils"
 import { open } from "./open"
 import { wake } from "./wake"
 
@@ -43,15 +43,20 @@ export async function move(actor: Actor, mx: number, my: number, game: Game): Pr
   // set this new tile's actor to the actor
   destinationTile.actor = actor
 
+  // set the actor's tile to this new tile
+  actor.tile = destinationTile
+
   // advance time for the actor
   actor.time += actor.speed
 
   if (game.sound) {
     // figure out distance to the character
-    const d = actor === game.character ? 0 : distance(actor, game.character)
+    const d = actor.me ? 0 : distance(actor, game.me)
     const volume = (1 - d / 20) * 0.5
     if (volume > 0) playAudio(`footstep`, { volume })
   }
+
+  game.me.mood = chooseOne<Mood>(["neutral", "worried"])
 
   return { verb: "moved", tile: destinationTile }
 }

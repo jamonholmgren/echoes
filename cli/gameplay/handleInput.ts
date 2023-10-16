@@ -5,7 +5,7 @@ import { ActionResult, Game } from "../lib/types"
 export async function handleInput(k: string, game: Game) {
   let result: ActionResult = { verb: "pending", tile: undefined }
 
-  const c = game.character
+  const c = game.me
 
   if (k === "s") result = await rest(c, game)
   if (k === "w") result = await move(c, 0, -1, game)

@@ -23,7 +23,7 @@ const bgDarkGray = bgColorHexStart("#232323")
 
 // print the map (assumes it's against the left side of the screen always)
 export function drawMap(game: Game) {
-  const c = game.character
+  const c = game.me
   const discovered: Tile[] = []
 
   // hardcoded for now
@@ -65,9 +65,9 @@ export function drawMap(game: Game) {
 
       const visible = canSeeTile(map, c.x, c.y, x, y, c.eyesight)
 
-      if (visible && (!tile.discovered || tile.actor?.discovered === false)) {
+      if (visible && (!tile.discovered || (tile.actor && !tile.actor.tags.discovered))) {
         tile.discovered = true
-        if (tile.actor) tile.actor.discovered = true
+        if (tile.actor) tile.actor.tags.discovered = true
         discovered.push(tile)
       }
 
@@ -79,6 +79,8 @@ export function drawMap(game: Game) {
       }
 
       if (visible && tile.actor) {
+        tile.actor.tags.visible = true
+
         if (tile.actor.race === "human") {
           line += moods[tile.actor.mood]
         } else {
@@ -87,6 +89,7 @@ export function drawMap(game: Game) {
         continue
       } else if (!visible && !tile.discovered) {
         line += "  "
+        if (tile.actor) tile.actor.tags.visible = false
         continue
       }
 
@@ -139,7 +142,7 @@ let hudPos: CursorPos
 function drawHUD(game: Game) {
   const mapStart = cursor.bookmarks["mapstart"]
 
-  const c = game.character
+  const c = game.me
 
   hudPos = {
     cols: mapStart.cols + game.viewWidth * 2 + 2,

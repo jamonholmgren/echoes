@@ -28,7 +28,7 @@ export const races = {
 export type Race = keyof typeof races
 
 export type Game = {
-  character: Actor
+  me: Actor
   actors: Actor[] // npc's, monsters, etc
   map: GameMap
   interfaceWidth: number // total terminal width we're working with
@@ -64,17 +64,22 @@ export type Item = {
 }
 
 export type Actor = {
+  me: boolean // is this the main character?
   name: string
   race: Race
   mood: Mood
   x: number
   y: number
+  discovered: boolean
+  visible: boolean
+  tile?: Tile // current tile I'm on
   eyesight: number // how far can I see
   speed: number // how many ticks I move forward each turn
   time: number // what my current tick is
-  discovered: boolean
   act?: (game: Game) => Promise<ActionResult>
+  on: { [event: string]: (result: ActionResult, game: Game) => Promise<ActionResult> }
   history: ActionResult[]
+  tags: { [tag: string]: unknown } // what have I done? for storyline purposes
 }
 
 export type ActionResult = {

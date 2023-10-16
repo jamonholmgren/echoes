@@ -9,6 +9,7 @@ const audioPath = `${__dirname}/../audio`
 const _audioFiles = {
   footstep: "footstep.wav",
   music: "music-01.wav",
+  door: "door.mp3",
 } as const
 
 export function playAudio(name: keyof typeof _audioFiles, options: AudioOptions = {}): Promise<void> {
