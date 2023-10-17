@@ -7,6 +7,7 @@ import { makeGoblin } from "../actors/goblin"
 import { gameLoop } from "../gameplay/gameLoop"
 import { makeCharacter } from "../actors/character"
 import { guardActors } from "../lib/guards"
+import { tileLight } from "../lib/lighting"
 
 const interfaceWidth = 80 // total width
 const interfaceHeight = 24 // total height
@@ -68,24 +69,35 @@ export default {
       sound,
     }
 
-    function cleanup() {
-      // cleanup!
-      if (!debug) cursor.alternate(false)
+    // calculate the tile lighting across the map
+    map.tiles.forEach((row, y) => {
+      row.forEach((tile, x) => {
+        tile.light = tileLight(game, tile.x, tile.y)
+      })
+    })
+
+    function cleanup(code: number) {
+      if (code === 0 || code === null) {
+        // cleanup!
+        if (!debug) cursor.alternate(false)
+        cursor.show().write(`
+
+      I hope you enjoyed Echoes of the Dark!
+
+      If you have any feedback, please let me know on Twitter: https://x.com/jamonholmgren
+
+      I'd love to hear from you!
+
+      `)
+      }
+
       cursor.show().write(`
-
-I hope you enjoyed Echoes of the Dark!
-
-If you have any feedback, please let me know on Twitter: https://x.com/jamonholmgren
-
-I'd love to hear from you!
-
----
-${getErrors()
-  .map((e, i) => `Error ${i}:\n${e}`)
-  .join("\n\n")}
----
-
-`)
+      ---
+      ${getErrors()
+        .map((e, i) => `Error ${i}:\n${e}`)
+        .join("\n\n")}
+      ---
+      `)
 
       cancelAllAudio()
     }

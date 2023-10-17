@@ -19,10 +19,10 @@ export function makeCharacter(props: Partial<Actor>): Actor {
     eyesight: 14,
     speed: 10,
     time: 0,
-    history: [],
-    tags: {
-      discovered: true,
-    },
+    // history: [],
+    discovered: true,
+    visible: true,
+    tags: {},
     async act(game) {
       while (true) {
         const k = await inputKey()

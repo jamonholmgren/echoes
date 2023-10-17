@@ -1,8 +1,8 @@
 import type { Actor } from "../lib/types"
 import { wander } from "../actions/wander"
 import { follow } from "../actions/follow"
-import { canSeeTile } from "../lib/utils"
 import { sleep } from "../actions/sleep"
+import { canSee } from "../lib/lighting"
 
 export function makeGoblin(props: Partial<Actor>): Actor {
   return {
@@ -15,7 +15,7 @@ export function makeGoblin(props: Partial<Actor>): Actor {
     speed: 12,
     time: 0,
     eyesight: 8,
-    history: [],
+    // history: [],
     visible: false,
     discovered: false,
     tags: {},
@@ -26,7 +26,8 @@ export function makeGoblin(props: Partial<Actor>): Actor {
       if (!tile.discovered) return sleep(this, game)
 
       // can I see the player?
-      const visible = canSeeTile(game.map, this.x, this.y, game.me.x, game.me.y, this.eyesight)
+      // const visible = canSeeTile(game.map, this.x, this.y, game.me.x, game.me.y, this.eyesight)
+      const visible = canSee(this.x, this.y, game.me.x, game.me.y, game.map, this.eyesight)
 
       if (visible) {
         // go towards the player

@@ -47,11 +47,17 @@ export type GameMap = {
   tiles: Tile[][]
 }
 
+export const tileTypes = ["☻", "#", "/", "\\", "☼"] as const
+
+// these block movement and sight
+export const solidTiles = ["#", "/"]
+
 export type Tile = {
   // do we need these?
-  // x: number
-  // y: number
-  type: string
+  x: number
+  y: number
+  type: (typeof tileTypes)[number]
+  light: number // 0 to 1
   discovered: boolean
   items: Item[]
   actor?: Actor
@@ -78,8 +84,8 @@ export type Actor = {
   time: number // what my current tick is
   act?: (game: Game) => Promise<ActionResult>
   on: { [event: string]: (result: ActionResult, game: Game) => Promise<ActionResult> }
-  history: ActionResult[]
-  tags: { [tag: string]: unknown } // what have I done? for storyline purposes
+  // history: ActionResult[]
+  tags: { [tag: string]: unknown } // what has this particular instance done? for storyline purposes
 }
 
 export type ActionResult = {

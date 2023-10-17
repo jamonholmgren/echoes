@@ -4,6 +4,7 @@ import { drawMap } from "../lib/drawMap"
 import { playAudio } from "../lib/playAudio"
 import { updateNextActor } from "./updateNextActor"
 import { logError, waitSpace } from "../lib/utils"
+import { visibleTiles } from "../lib/lighting"
 
 export async function gameLoop(game: Game, props: Props) {
   cursor.bookmark("mapstart", { cols: game.startPos.cols, rows: game.startPos.rows + 2 })
@@ -19,7 +20,13 @@ export async function gameLoop(game: Game, props: Props) {
       process.exit(1)
     }
 
-    const discovered = drawMap(game)
+    const visible = visibleTiles(game)
+
+    const discovered = visible.filter((t) => {
+      if (t.discovered) return false
+      t.discovered = true
+      return true
+    })
 
     if (discovered.length > 0) {
       // eventually, say something in the log that you see something
@@ -31,6 +38,8 @@ export async function gameLoop(game: Game, props: Props) {
         continue // loop back around so we can rerender
       }
     }
+
+    drawMap(game, visible)
 
     // loop through every actor and see who is next to move
     // sort by furthest behind in time

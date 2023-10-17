@@ -1,28 +1,20 @@
 import {
   CursorPos,
-  bgBrightBlack,
-  bgGray,
-  bgRed,
   cursor,
   gray,
   green,
   white,
-  bgColorHex,
-  black,
   bgColorEnd,
   colorEnd,
-  inputKey,
   colorStart,
   ansiColors,
   bgColorHexStart,
+  bgColorRGBStart,
 } from "bluebun"
 import { Game, Tile, moods, races } from "./types"
-import { canSeeTile, logError } from "./utils"
-
-const bgDarkGray = bgColorHexStart("#232323")
 
 // print the map (assumes it's against the left side of the screen always)
-export function drawMap(game: Game) {
+export function drawMap(game: Game, visible: Tile[]) {
   const c = game.me
   const discovered: Tile[] = []
 
@@ -63,22 +55,38 @@ export function drawMap(game: Game) {
         continue
       }
 
-      const visible = canSeeTile(map, c.x, c.y, x, y, c.eyesight)
+      // const isVisible = canSeeTile(map, c.x, c.y, x, y, c.eyesight)
+      const isVisible = visible.includes(tile)
 
-      if (visible && (!tile.discovered || (tile.actor && !tile.actor.tags.discovered))) {
-        tile.discovered = true
-        if (tile.actor) tile.actor.tags.discovered = true
+      if (!tile.discovered && isVisible) {
         discovered.push(tile)
+        tile.discovered = true
       }
 
-      const bgCol = visible ? colorStart(ansiColors.gray + 10) : tile.discovered ? bgDarkGray : bgColorEnd
+      // calculate dynamic light based on how far from the character this tile is
+      // and add it to the tile's base lighting
+      const dist = Math.abs(c.x - x) + Math.abs(c.y - y)
+      const characterLight = Math.min(0.5, 0.5 - dist / 3)
+      const light = Math.min(0.5, tile.light + characterLight)
+
+      let bgCol: string = bgColorEnd
+      if (tile.discovered) {
+        if (isVisible) {
+          // use the light for gray
+          const c = Math.floor(255 * light)
+          bgCol = bgColorRGBStart(c, c, c)
+        } else {
+          // discovered but not visible means we have a black background
+          bgCol = bgColorEnd
+        }
+      }
 
       if (curBg !== bgCol) {
         line += bgCol
         curBg = bgCol
       }
 
-      if (visible && tile.actor) {
+      if (isVisible && tile.actor) {
         tile.actor.tags.visible = true
 
         if (tile.actor.race === "human") {
@@ -87,7 +95,7 @@ export function drawMap(game: Game) {
           line += races[tile.actor.race]
         }
         continue
-      } else if (!visible && !tile.discovered) {
+      } else if (!isVisible && !tile.discovered) {
         line += "  "
         if (tile.actor) tile.actor.tags.visible = false
         continue
@@ -110,9 +118,15 @@ export function drawMap(game: Game) {
       } else if (tile.type === "/") {
         // door
         line += "🚪"
+      } else if (tile.type === "☼") {
+        // light
+        line += "🕯 "
       } else if (tile.type === "\\") {
         // open door
         line += "🚪"
+      } else if (tile.type === "☻") {
+        // player
+        line += "··"
       } else {
         // not sure which of these is best
         // line += col(gray("⬛️"))
