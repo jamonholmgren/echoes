@@ -57,7 +57,7 @@ export type Tile = {
   x: number
   y: number
   type: (typeof tileTypes)[number]
-  light: number // 0 to 1
+  lit: boolean
   discovered: boolean
   items: Item[]
   actor?: Actor

@@ -34,7 +34,7 @@ const tiles = `
         discovered: false,
         items: [],
         actor: undefined,
-        light: 0,
+        lit: false,
       }
 
       return t

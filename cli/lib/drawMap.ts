@@ -12,6 +12,7 @@ import {
   bgColorRGBStart,
 } from "bluebun"
 import { Game, Tile, moods, races } from "./types"
+import { distance } from "./utils"
 
 // print the map (assumes it's against the left side of the screen always)
 export function drawMap(game: Game, visible: Tile[]) {
@@ -65,15 +66,14 @@ export function drawMap(game: Game, visible: Tile[]) {
 
       // calculate dynamic light based on how far from the character this tile is
       // and add it to the tile's base lighting
-      const dist = Math.abs(c.x - x) + Math.abs(c.y - y)
-      const characterLight = Math.min(0.5, 0.5 - dist / 3)
-      const light = Math.min(0.5, tile.light + characterLight)
+      const characterLit = distance(c, { x, y }) < c.eyesight
+      const lit = tile.lit || characterLit
 
       let bgCol: string = bgColorEnd
       if (tile.discovered) {
         if (isVisible) {
           // use the light for gray
-          const c = Math.floor(255 * light)
+          const c = lit ? 64 : 0
           bgCol = bgColorRGBStart(c, c, c)
         } else {
           // discovered but not visible means we have a black background

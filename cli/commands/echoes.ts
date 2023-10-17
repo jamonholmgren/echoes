@@ -7,7 +7,6 @@ import { makeGoblin } from "../actors/goblin"
 import { gameLoop } from "../gameplay/gameLoop"
 import { makeCharacter } from "../actors/character"
 import { guardActors } from "../lib/guards"
-import { tileLight } from "../lib/lighting"
 
 const interfaceWidth = 80 // total width
 const interfaceHeight = 24 // total height
@@ -68,13 +67,6 @@ export default {
       viewHeight: 20,
       sound,
     }
-
-    // calculate the tile lighting across the map
-    map.tiles.forEach((row, y) => {
-      row.forEach((tile, x) => {
-        tile.light = tileLight(game, tile.x, tile.y)
-      })
-    })
 
     function cleanup(code: number) {
       if (code === 0 || code === null) {
