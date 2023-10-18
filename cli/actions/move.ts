@@ -26,12 +26,12 @@ export async function move(actor: Actor, mx: number, my: number, game: Game): Pr
   }
 
   // if it's a wall, don't let them move ... try again
-  if (destinationTile.type === "#") {
+  if (destinationTile.type === "wall") {
     return { verb: "pending", tile: destinationTile }
   }
 
   // if it's a door, open it
-  if (destinationTile.type === "/") return open(actor, destinationTile, game)
+  if (destinationTile.type === "door") return open(actor, destinationTile, game)
 
   // otherwise, let's move to the destination square
   actor.x = destinationX

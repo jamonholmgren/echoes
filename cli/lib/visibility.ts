@@ -1,3 +1,4 @@
+import { TORCH_RADIUS } from "../gameplay/constants"
 import { solidTiles, type Game, type GameMap, type Tile } from "./types"
 import { distance } from "./utils"
 
@@ -32,16 +33,31 @@ export function canSee(map: GameMap, x0: number, y0: number, x1: number, y1: num
   }
 }
 
+/**
+ * Visible tiles from the character's perspective.
+ * Also takes into account lighting.
+ */
 export function visibleTiles(game: Game) {
   const me = game.me
   const eyesight = me.eyesight
 
   const tiles = []
 
+  // right or left hand has a torch?
+  const hasTorch = me.inventory[0]?.type === "torch" || me.inventory[1]?.type === "torch"
+
   for (let y = -eyesight; y <= eyesight; y++) {
     for (let x = -eyesight; x <= eyesight; x++) {
       const tile = game.map.tiles[me.y + y]?.[me.x + x]
       if (!tile) continue
+
+      // is the tile lit by a torch? or at least close enough to the character to see it?
+      const isClose = y >= -1 && y <= 1 && x >= -1 && x <= 1
+      let isLit = tile.lit || isClose || (hasTorch && distance(me, tile) <= TORCH_RADIUS)
+      if (!isLit) continue // no point, since the tile isn't lit up!
+
+      // okay, it's lit up!
+      // now, can we see it?
 
       // check direct line-of-sight
       let visible = canSee(game.map, me.x, me.y, tile.x, tile.y, eyesight)

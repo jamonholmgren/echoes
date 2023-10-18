@@ -16,7 +16,7 @@ import { TORCH_RADIUS } from "../gameplay/constants"
 
 // print the map (assumes it's against the left side of the screen always)
 export function drawMap(game: Game, visible: Tile[]) {
-  const c = game.me
+  const me = game.me
 
   // hardcoded for now
   // cursor.jump("mapstart").write(gray("Echoes in the Dark") + "\n\n")
@@ -27,9 +27,9 @@ export function drawMap(game: Game, visible: Tile[]) {
   // remember that tiles are 2 cols wide and 1 row tall
   // but we do not take that into account here!
   const map = game.map
-  const left = c.x - Math.floor(game.viewWidth / 2)
+  const left = me.x - Math.floor(game.viewWidth / 2)
   const right = left + game.viewWidth
-  const top = c.y - Math.floor(game.viewHeight / 2)
+  const top = me.y - Math.floor(game.viewHeight / 2)
   const bottom = top + game.viewHeight
 
   // print the map
@@ -59,14 +59,9 @@ export function drawMap(game: Game, visible: Tile[]) {
         continue
       }
 
-      // calculate dynamic light based on how far from the character this tile is
-      // and add it to the tile's base lighting
-      const characterLit = distance(c, tile) < TORCH_RADIUS
-      const isLit = tile.lit || characterLit
-
       // const isVisible = canSeeTile(map, c.x, c.y, x, y, c.eyesight)
       // visible means within the character's eyesight and lit
-      const isVisible = visible.includes(tile) && isLit
+      const isVisible = visible.includes(tile)
 
       let bgCol: string = bgColorEnd
       if (tile.discovered) {
@@ -100,7 +95,7 @@ export function drawMap(game: Game, visible: Tile[]) {
         continue
       }
 
-      if (tile.type === "#") {
+      if (tile.type === "wall") {
         // not sure which of these wall icons is best
         // line += col(gray("⬛️"))
         // line += col("██")
@@ -114,16 +109,16 @@ export function drawMap(game: Game, visible: Tile[]) {
         line += "░░"
         // line += col("▒▒")
         // line += col("██")
-      } else if (tile.type === "/") {
+      } else if (tile.type === "door") {
         // door
         line += "🚪"
-      } else if (tile.type === "☼") {
+      } else if (tile.type === "torch") {
         // light
         line += "🕯 "
-      } else if (tile.type === "\\") {
+      } else if (tile.type === "openDoor") {
         // open door
         line += "🚪"
-      } else if (tile.type === "☻") {
+      } else if (tile.type === "start") {
         // player
         line += "··"
       } else {

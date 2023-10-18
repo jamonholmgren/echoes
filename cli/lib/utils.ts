@@ -63,3 +63,5 @@ export function logError(msg: string) {
 export function getErrors() {
   return _errors
 }
+
+export const keys = <T>(o: T) => Object.keys(o as any) as (keyof typeof o)[]

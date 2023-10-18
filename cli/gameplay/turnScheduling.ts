@@ -1,11 +1,10 @@
-import { delay, gray } from "bluebun"
+import { delay } from "bluebun"
 import { ActionResult, Game } from "../lib/types"
 import { rest } from "../actions/rest"
-import { dialog } from "../lib/dialog"
-import { waitSpace } from "../lib/utils"
+import { dialogSpace } from "../lib/dialog"
 import { guardActorTime } from "../lib/guards"
 
-export async function updateNextActor(game: Game) {
+export async function turnScheduling(game: Game) {
   game.actors.sort((a, b) => a.time - b.time)
   const actor = game.actors[0]
 
@@ -42,8 +41,7 @@ export async function updateNextActor(game: Game) {
       // if the actor is supposed to be moving but isn't, it'll just
       // sleep forever and we won't know why
       // we need a way to catch this situation somehow
-      dialog(game, [`${actor.name} is stuck!`, gray("space to continue")])
-      await waitSpace()
+      await dialogSpace(game, [`${actor.name} is stuck!`])
       result = await rest(actor, game)
       break
     }

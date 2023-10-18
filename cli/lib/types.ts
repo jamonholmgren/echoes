@@ -47,25 +47,90 @@ export type GameMap = {
   tiles: Tile[][]
 }
 
-export const tileTypes = ["☻", "#", "/", "\\", "☼"] as const
+export const tileTypes = {
+  start: {
+    tile: "☻",
+    draw: "··",
+  },
+  wall: {
+    tile: "#",
+    draw: "░░",
+  },
+  floor: {
+    tile: ".",
+    draw: "··",
+  },
+  door: {
+    tile: "/",
+    draw: "🚪",
+  },
+  openDoor: {
+    tile: "\\",
+    draw: "🚪",
+  },
+  torch: {
+    tile: "☼",
+    draw: "🕯",
+  },
+} as const
+
+export type TileType = keyof typeof tileTypes | "unknown"
 
 // these block movement and sight
-export const solidTiles = ["#", "/"]
+export const solidTiles: TileType[] = ["wall", "door"]
 
 export type Tile = {
-  // do we need these?
   x: number
   y: number
-  type: (typeof tileTypes)[number]
+  type: TileType
   lit: boolean
   discovered: boolean
   items: Item[]
   actor?: Actor
 }
 
+export const itemTypes = {
+  torch: {
+    tile: "☼",
+    draw: "🕯",
+  },
+  sword: {
+    tile: "┼",
+    draw: "🗡",
+  },
+  shield: {
+    tile: "╬",
+    draw: "🛡",
+  },
+  potion: {
+    tile: "⌂",
+    draw: "🧪",
+  },
+  key: {
+    tile: "¶",
+    draw: "🔑",
+  },
+  gold: {
+    tile: "$",
+    draw: "💰",
+  },
+  meat: {
+    tile: "%",
+    draw: "🍗",
+  },
+  pick: {
+    tile: "┬",
+    draw: "⛏",
+  },
+  axe: {
+    tile: "╕",
+    draw: "🪓",
+  },
+} as const
+
 export type Item = {
   name: string
-  type: string
+  type: keyof typeof itemTypes | "unknown"
   quantity: number
 }
 
@@ -79,13 +144,14 @@ export type Actor = {
   discovered: boolean
   visible: boolean
   tile?: Tile // current tile I'm on
-  eyesight: number // how far can I see
+  eyesight: number // how far can I see (assuming there's light)
   speed: number // how many ticks I move forward each turn
   time: number // what my current tick is
   act?: (game: Game) => Promise<ActionResult>
   on: { [event: string]: (result: ActionResult, game: Game) => Promise<ActionResult> }
   // history: ActionResult[]
   tags: { [tag: string]: unknown } // what has this particular instance done? for storyline purposes
+  inventory: Item[] // items at position 0 and 1 are in right and left hands, respectively
 }
 
 export type ActionResult = {

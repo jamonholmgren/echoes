@@ -2,8 +2,8 @@ import type { Game } from "../lib/types"
 import { Props, cursor, gray } from "bluebun"
 import { drawMap } from "../lib/drawMap"
 import { playAudio } from "../lib/playAudio"
-import { updateNextActor } from "./updateNextActor"
-import { distance, logError, waitSpace } from "../lib/utils"
+import { turnScheduling } from "./turnScheduling"
+import { distance, logError } from "../lib/utils"
 import { visibleTiles } from "../lib/visibility"
 import { TORCH_RADIUS } from "./constants"
 
@@ -25,16 +25,14 @@ export async function gameLoop(game: Game, props: Props) {
 
     const discovered = visible.filter((t) => {
       if (t.discovered) return false
-      // check if it's lit -- if it's not lit, it's still not discovered
-      let lit = t.lit || distance(t, game.me) <= TORCH_RADIUS
-      if (lit) t.discovered = true
-      return lit
+      t.discovered = true
+      return true
     })
 
     if (discovered.length > 0) {
       // eventually, say something in the log that you see something
       // for now, make the character surprised
-      const interestingDiscoveredTiles = ["/", "\\"]
+      const interestingDiscoveredTiles = ["door", "openDoor"]
       const interesting = discovered.find((t) => interestingDiscoveredTiles.includes(t.type))
       if (interesting && game.me.mood !== "surprised" && game.me.mood !== "sleeping") {
         game.me.mood = "surprised"
@@ -47,7 +45,7 @@ export async function gameLoop(game: Game, props: Props) {
     // loop through every actor and see who is next to move
     // sort by furthest behind in time
     // includes the main character too
-    await updateNextActor(game)
+    await turnScheduling(game)
 
     runawayLoopProtection = 0
   }

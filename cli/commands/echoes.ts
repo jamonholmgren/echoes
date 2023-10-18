@@ -40,7 +40,7 @@ export default {
 
     // get the character starting position from the map
     const { x, y } = map.tiles.reduce(
-      (acc, row, y) => row.reduce((acc, tile, x) => (tile.type === "☻" ? { x, y } : acc), acc),
+      (acc, row, y) => row.reduce((acc, tile, x) => (tile.type === "start" ? { x, y } : acc), acc),
       { x: 0, y: 0 }
     )
 

@@ -1,5 +1,6 @@
-import { CursorPos, cursor, inputKey, stripANSI } from "bluebun"
+import { CursorPos, cursor, gray, inputKey, stripANSI } from "bluebun"
 import { type Game } from "./types"
+import { waitSpace } from "./utils"
 
 export function dialog(game: Game, lines: string[]) {
   const widestString = lines.reduce((a, b) => (stripANSI(a).length > stripANSI(b).length ? a : b), "")
@@ -19,4 +20,9 @@ export function dialog(game: Game, lines: string[]) {
     cursor.goto({ cols: left, rows: top + 1 + i }).write("│" + "  " + text + padding + "│")
   }
   cursor.goto({ cols: left, rows: top + dialogHeight - 1 }).write("└" + "─".repeat(dialogWidth) + "┘")
+}
+
+export async function dialogSpace(game: Game, lines: string[]) {
+  dialog(game, lines.concat(["", gray("space to continue")]))
+  await waitSpace()
 }

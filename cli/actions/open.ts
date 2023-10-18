@@ -4,7 +4,7 @@ import { ActionResult, Actor, Game, Tile } from "../lib/types"
 export async function open(actor: Actor, destinationTile: Tile, game: Game): Promise<ActionResult> {
   actor.time += actor.speed
 
-  destinationTile.type = "\\"
+  destinationTile.type = "openDoor"
 
   // play the opening door sound
   if (game.sound) playAudio(`door`, { volume: 0.2 })
