@@ -18,12 +18,12 @@ export function appdir() {
   }
 }
 
-export function getTilesAround(game: Game, x: number, y: number, radius: number) {
+export function getTilesAround(map: GameMap, x: number, y: number, radius: number) {
   const tiles = []
 
   for (let i = -radius; i <= radius; i++) {
     for (let j = -radius; j <= radius; j++) {
-      const tile = game.map.tiles[y + j]?.[x + i]
+      const tile = map.tiles[y + j]?.[x + i]
       if (tile) tiles.push(tile)
     }
   }

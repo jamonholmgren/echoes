@@ -8,16 +8,15 @@ import {
   colorEnd,
   colorStart,
   ansiColors,
-  bgColorHexStart,
   bgColorRGBStart,
 } from "bluebun"
 import { Game, Tile, moods, races } from "./types"
 import { distance } from "./utils"
+import { TORCH_RADIUS } from "../gameplay/constants"
 
 // print the map (assumes it's against the left side of the screen always)
 export function drawMap(game: Game, visible: Tile[]) {
   const c = game.me
-  const discovered: Tile[] = []
 
   // hardcoded for now
   // cursor.jump("mapstart").write(gray("Echoes in the Dark") + "\n\n")
@@ -52,28 +51,28 @@ export function drawMap(game: Game, visible: Tile[]) {
       const tile = row[x]
 
       if (!tile) {
+        if (curBg !== bgColorEnd) {
+          line += bgColorEnd
+          curBg = bgColorEnd
+        }
         line += "  " // out of bounds
         continue
       }
 
-      // const isVisible = canSeeTile(map, c.x, c.y, x, y, c.eyesight)
-      const isVisible = visible.includes(tile)
-
-      if (!tile.discovered && isVisible) {
-        discovered.push(tile)
-        tile.discovered = true
-      }
-
       // calculate dynamic light based on how far from the character this tile is
       // and add it to the tile's base lighting
-      const characterLit = distance(c, { x, y }) < c.eyesight
-      const lit = tile.lit || characterLit
+      const characterLit = distance(c, tile) < TORCH_RADIUS
+      const isLit = tile.lit || characterLit
+
+      // const isVisible = canSeeTile(map, c.x, c.y, x, y, c.eyesight)
+      // visible means within the character's eyesight and lit
+      const isVisible = visible.includes(tile) && isLit
 
       let bgCol: string = bgColorEnd
       if (tile.discovered) {
         if (isVisible) {
           // use the light for gray
-          const c = lit ? 64 : 0
+          const c = 64
           bgCol = bgColorRGBStart(c, c, c)
         } else {
           // discovered but not visible means we have a black background
@@ -148,8 +147,6 @@ export function drawMap(game: Game, visible: Tile[]) {
   cursor.write("└" + "─".repeat(game.viewWidth * 2) + "┘\n")
 
   drawHUD(game)
-
-  return discovered
 }
 
 let hudPos: CursorPos

@@ -3,8 +3,9 @@ import { Props, cursor, gray } from "bluebun"
 import { drawMap } from "../lib/drawMap"
 import { playAudio } from "../lib/playAudio"
 import { updateNextActor } from "./updateNextActor"
-import { logError, waitSpace } from "../lib/utils"
-import { visibleTiles } from "../lib/lighting"
+import { distance, logError, waitSpace } from "../lib/utils"
+import { visibleTiles } from "../lib/visibility"
+import { TORCH_RADIUS } from "./constants"
 
 export async function gameLoop(game: Game, props: Props) {
   cursor.bookmark("mapstart", { cols: game.startPos.cols, rows: game.startPos.rows + 2 })
@@ -24,8 +25,10 @@ export async function gameLoop(game: Game, props: Props) {
 
     const discovered = visible.filter((t) => {
       if (t.discovered) return false
-      t.discovered = true
-      return true
+      // check if it's lit -- if it's not lit, it's still not discovered
+      let lit = t.lit || distance(t, game.me) <= TORCH_RADIUS
+      if (lit) t.discovered = true
+      return lit
     })
 
     if (discovered.length > 0) {

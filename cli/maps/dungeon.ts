@@ -1,5 +1,7 @@
-import { tileTypes, type GameMap, type Tile } from "../lib/types"
-import { logError } from "../lib/utils"
+import { WALL_TORCH_RADIUS } from "../gameplay/constants"
+import { canSee } from "../lib/visibility"
+import { type GameMap, type Tile } from "../lib/types"
+import { distance, getTilesAround } from "../lib/utils"
 
 // starting point for character: ☻
 
@@ -40,6 +42,17 @@ const tiles = `
       return t
     })
   )
+
+// pre-calculate lighting
+for (let y = 0; y < tiles.length; y++) {
+  for (let x = 0; x < tiles[y].length; x++) {
+    const tile = tiles[y][x]
+    // find any close (within 3) lighting sources
+    const tilesAround = getTilesAround({ tiles }, x, y, WALL_TORCH_RADIUS)
+    const lit = tilesAround.some((t) => t.type === "☼" && distance({ x, y }, { x: t.x, y: t.y }) <= 3)
+    tile.lit = lit
+  }
+}
 
 export const map: GameMap = {
   tiles,
