@@ -41,7 +41,7 @@ export function visibleTiles(game: Game) {
   const me = game.me
   const eyesight = me.eyesight
 
-  const tiles = []
+  const visTiles: Tile[] = []
 
   // right or left hand has a torch?
   const hasTorch = me.inventory[0]?.type === "torch" || me.inventory[1]?.type === "torch"
@@ -53,16 +53,23 @@ export function visibleTiles(game: Game) {
 
       // is the tile lit by a torch? or at least close enough to the character to see it?
       const isClose = y >= -1 && y <= 1 && x >= -1 && x <= 1
-      let isLit = tile.lit || isClose || (hasTorch && distance(me, tile) <= TORCH_RADIUS)
+
+      if (isClose) {
+        // shortcut for speed
+        visTiles.push(tile)
+        continue
+      }
+
+      let isLit = tile.lit || (hasTorch && distance(me, tile) <= TORCH_RADIUS)
       if (!isLit) continue // no point, since the tile isn't lit up!
 
       // okay, it's lit up!
       // now, can we see it?
 
       // check direct line-of-sight
-      let visible = canSee(game.map, me.x, me.y, tile.x, tile.y, eyesight)
+      let isVisible = canSee(game.map, me.x, me.y, tile.x, tile.y, eyesight)
 
-      if (!visible) {
+      if (!isVisible) {
         // if we can't see it directly line-of-sight, then we will
         // check from the 4 corners around the player, allowing us to
         // see around corners better -- more natural lighting
@@ -73,17 +80,17 @@ export function visibleTiles(game: Game) {
             const dirY = Math.sign(y)
             const nearTile = game.map.tiles[me.y + dirY]?.[me.x + dirX]
 
-            visible = nearTile && canSee(game.map, nearTile.x, nearTile.y, tile.x, tile.y, eyesight)
+            isVisible = nearTile && canSee(game.map, nearTile.x, nearTile.y, tile.x, tile.y, eyesight)
 
-            if (visible) break
+            if (isVisible) break
           }
-          if (visible) break
+          if (isVisible) break
         }
       }
 
-      if (visible) tiles.push(tile)
+      if (isVisible) visTiles.push(tile)
     }
   }
 
-  return tiles
+  return visTiles
 }

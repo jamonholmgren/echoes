@@ -11,8 +11,6 @@ import {
   bgColorRGBStart,
 } from "bluebun"
 import { Game, Tile, moods, races } from "./types"
-import { distance } from "./utils"
-import { TORCH_RADIUS } from "../gameplay/constants"
 
 // print the map (assumes it's against the left side of the screen always)
 export function drawMap(game: Game, visible: Tile[]) {
@@ -59,15 +57,14 @@ export function drawMap(game: Game, visible: Tile[]) {
         continue
       }
 
-      // const isVisible = canSeeTile(map, c.x, c.y, x, y, c.eyesight)
       // visible means within the character's eyesight and lit
       const isVisible = visible.includes(tile)
 
       let bgCol: string = bgColorEnd
       if (tile.discovered) {
         if (isVisible) {
-          // use the light for gray
-          const c = 64
+          // lit areas are dark gray
+          const c = 32
           bgCol = bgColorRGBStart(c, c, c)
         } else {
           // discovered but not visible means we have a black background

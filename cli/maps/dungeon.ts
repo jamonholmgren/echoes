@@ -1,6 +1,7 @@
 import { WALL_TORCH_RADIUS } from "../gameplay/constants"
 import { tileTypes, type GameMap, type Tile } from "../lib/types"
 import { distance, getTilesAround, keys } from "../lib/utils"
+import { canSee } from "../lib/visibility"
 
 const tileTypeNames = keys(tileTypes)
 
@@ -10,7 +11,7 @@ const tiles = `
 #☼............................................................#
 #.............................................................#
 #.###/######/#######/####.....................................#
-#.#......#.....☼#.......#.....................................#
+#.#☼.....#.....☼#.......#.....................................#
 #.#......#...☻..#.......#.....................................#
 #.#......#......#.......#.....................................#
 #.#######################.....................................#
@@ -50,7 +51,7 @@ export function calculateStaticMapLighting(tiles: Tile[][]) {
       const tile = tiles[y][x]
       // find any close (within 3) lighting sources
       const tilesAround = getTilesAround({ tiles }, x, y, WALL_TORCH_RADIUS)
-      const lit = tilesAround.some((t) => t.type === "wall" && distance({ x, y }, { x: t.x, y: t.y }) <= 3)
+      const lit = tilesAround.some((t) => t.type === "torch" && canSee({ tiles }, t.x, t.y, x, y, WALL_TORCH_RADIUS))
       tile.lit = lit
     }
   }
