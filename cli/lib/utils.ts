@@ -1,6 +1,6 @@
 import os from "os"
 import path from "path"
-import { Game, type GameMap } from "./types"
+import { Actor, Game, type GameMap } from "./types"
 import { choose, inputKeys } from "bluebun"
 
 export function appdir() {
@@ -18,12 +18,13 @@ export function appdir() {
   }
 }
 
-export function getTilesAround(map: GameMap, x: number, y: number, radius: number) {
+export type Loc = { x: number; y: number }
+export function getTilesAround(map: GameMap, loc: Loc, radius: number) {
   const tiles = []
 
   for (let i = -radius; i <= radius; i++) {
     for (let j = -radius; j <= radius; j++) {
-      const tile = map.tiles[y + j]?.[x + i]
+      const tile = map.tiles[loc.y + j]?.[loc.x + i]
       if (tile) tiles.push(tile)
     }
   }
@@ -31,7 +32,28 @@ export function getTilesAround(map: GameMap, x: number, y: number, radius: numbe
   return tiles
 }
 
-export function distance(pos1: { x: number; y: number }, pos2: { x: number; y: number }): number {
+export function getVisibleTile(map: GameMap, type: string) {
+  return map.visible.find((t) => t.type === type)
+}
+
+export function getVisibleActors(map: GameMap): Actor[] {
+  return map.visible.map((t) => t.actor).filter((a) => !!a) as Actor[]
+}
+
+export function getActorNamed(game: Game, named: string) {
+  const actor = game.actors.find((a) => a?.name === named)
+  if (!actor) {
+    logError(`No actor named '${named}' found! This is required for gameplay`)
+    process.exit(1)
+  }
+  return actor
+}
+
+export function getTile(map: GameMap, loc: Loc) {
+  return map.tiles[loc.y]?.[loc.x]
+}
+
+export function distance(pos1: Loc, pos2: Loc): number {
   const dx = pos1.x - pos2.x
   const dy = pos1.y - pos2.y
   return Math.sqrt(dx * dx + dy * dy)

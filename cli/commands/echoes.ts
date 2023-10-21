@@ -58,7 +58,7 @@ export default {
       // we keep a special reference to the main character
       me: character,
       // but they're also just a normal actor in some ways
-      actors: [character, makeGoblin({ x: 10, y: 10 })],
+      actors: [character, makeGoblin({ name: "Guard", x: 12, y: 2 })],
       // bookmark the top left corner of the map, which will be our game screen starting point
       startPos: { cols: 1, rows: 1 },
       interfaceWidth,

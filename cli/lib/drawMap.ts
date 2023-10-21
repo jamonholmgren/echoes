@@ -10,10 +10,10 @@ import {
   ansiColors,
   bgColorRGBStart,
 } from "bluebun"
-import { Game, Tile, moods, races } from "./types"
+import { type Game, moods, races, tileTypes, itemTypes } from "./types"
 
 // print the map (assumes it's against the left side of the screen always)
-export function drawMap(game: Game, visible: Tile[]) {
+export function drawMap(game: Game) {
   const me = game.me
 
   // hardcoded for now
@@ -58,7 +58,7 @@ export function drawMap(game: Game, visible: Tile[]) {
       }
 
       // visible means within the character's eyesight and lit
-      const isVisible = visible.includes(tile)
+      const isVisible = game.map.visible.includes(tile)
 
       let bgCol: string = bgColorEnd
       if (tile.discovered) {
@@ -78,7 +78,7 @@ export function drawMap(game: Game, visible: Tile[]) {
       }
 
       if (isVisible && tile.actor) {
-        tile.actor.tags.visible = true
+        tile.actor.visible = true
 
         if (tile.actor.race === "human") {
           line += moods[tile.actor.mood]
@@ -88,7 +88,18 @@ export function drawMap(game: Game, visible: Tile[]) {
         continue
       } else if (!isVisible && !tile.discovered) {
         line += "  "
-        if (tile.actor) tile.actor.tags.visible = false
+        if (tile.actor) tile.actor.visible = false
+        continue
+      }
+
+      if (isVisible && tile.items.length > 0) {
+        const firstItem = tile.items[0]
+        const emoji = itemTypes[firstItem.type]?.draw
+        if (emoji) {
+          line += emoji
+        } else {
+          line += "❌"
+        }
         continue
       }
 

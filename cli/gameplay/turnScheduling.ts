@@ -3,6 +3,7 @@ import { ActionResult, Game } from "../lib/types"
 import { rest } from "../actions/rest"
 import { dialogSpace } from "../lib/dialog"
 import { guardActorTime } from "../lib/guards"
+import { updateWorld } from "./updateWorld"
 
 export async function turnScheduling(game: Game) {
   game.actors.sort((a, b) => a.time - b.time)
@@ -47,8 +48,6 @@ export async function turnScheduling(game: Game) {
     }
   }
 
+  // if the actor did not advance time-wise, this is a problem
   guardActorTime(actor, startTime, result, game)
-
-  // loop back!
-  return { loop: true }
 }

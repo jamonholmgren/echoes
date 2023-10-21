@@ -11,7 +11,7 @@ const tiles = `
 #☼............................................................#
 #.............................................................#
 #.###/######/#######/####.....................................#
-#.#☼.....#.....☼#.......#.....................................#
+#.#☼.....#☼....☼#.......#.....................................#
 #.#......#...☻..#.......#.....................................#
 #.#......#......#.......#.....................................#
 #.#######################.....................................#
@@ -50,8 +50,10 @@ export function calculateStaticMapLighting(tiles: Tile[][]) {
     for (let x = 0; x < tiles[y].length; x++) {
       const tile = tiles[y][x]
       // find any close (within 3) lighting sources
-      const tilesAround = getTilesAround({ tiles }, x, y, WALL_TORCH_RADIUS)
-      const lit = tilesAround.some((t) => t.type === "torch" && canSee({ tiles }, t.x, t.y, x, y, WALL_TORCH_RADIUS))
+      const tilesAround = getTilesAround({ tiles, visible: [] }, { x, y }, WALL_TORCH_RADIUS)
+      const lit = tilesAround.some(
+        (t) => t.type === "torch" && canSee({ tiles, visible: [] }, t.x, t.y, x, y, WALL_TORCH_RADIUS)
+      )
       tile.lit = lit
     }
   }
@@ -61,4 +63,5 @@ calculateStaticMapLighting(tiles)
 
 export const map: GameMap = {
   tiles,
+  visible: [],
 }

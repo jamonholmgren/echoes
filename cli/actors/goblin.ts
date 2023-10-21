@@ -15,6 +15,7 @@ export function makeGoblin(props: Partial<Actor>): Actor {
     speed: 12,
     time: 0,
     eyesight: 8,
+    inventory: [],
     // history: [],
     visible: false,
     discovered: false,

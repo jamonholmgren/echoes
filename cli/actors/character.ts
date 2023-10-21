@@ -3,6 +3,7 @@ import { chooseKey, waitSpace } from "../lib/utils"
 import { inputKey, delay, gray } from "bluebun"
 import { handleInput } from "../gameplay/handleInput"
 import { dialog, dialogSpace } from "../lib/dialog"
+import { discovered } from "../reactions/discovered"
 
 export function makeCharacter(props: Partial<Actor>): Actor {
   // half second delay between movement inputs on purpose
@@ -19,7 +20,6 @@ export function makeCharacter(props: Partial<Actor>): Actor {
     eyesight: 14,
     speed: 10,
     time: 0,
-    // history: [],
     discovered: true,
     visible: true,
     tags: {},
@@ -58,13 +58,14 @@ export function makeCharacter(props: Partial<Actor>): Actor {
     },
     on: {
       woke: async (result, game) => {
-        // if it's the character and it's the first time they've woken up?
-        // then we'll say something
         if (result.verb === "woke" && !game.me.tags.firstWake) {
           game.me.tags.firstWake = true
-          await dialogSpace(game, ["You wake up in a strange place.", "You don't remember how you got here."])
+          await dialogSpace(game, ["You wake up."])
         }
         return result
+      },
+      discovered: async (result, game) => {
+        if (result.tile) discovered(result.tile, game)
       },
     },
     ...props,

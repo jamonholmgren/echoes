@@ -45,6 +45,7 @@ export type SavedGames = {
 
 export type GameMap = {
   tiles: Tile[][]
+  visible: Tile[]
 }
 
 export const tileTypes = {
@@ -120,18 +121,27 @@ export const itemTypes = {
   },
   pick: {
     tile: "┬",
-    draw: "⛏",
+    draw: "⛏ ",
   },
   axe: {
     tile: "╕",
     draw: "🪓",
   },
+  unknown: {
+    tile: "X",
+    draw: "❌",
+  },
 } as const
 
 export type Item = {
+  x: number
+  y: number
   name: string
   type: keyof typeof itemTypes | "unknown"
   quantity: number
+  discovered: boolean
+  tile?: Tile
+  actor?: Actor
 }
 
 export type Actor = {
@@ -148,14 +158,23 @@ export type Actor = {
   speed: number // how many ticks I move forward each turn
   time: number // what my current tick is
   act?: (game: Game) => Promise<ActionResult>
-  on: { [event: string]: (result: ActionResult, game: Game) => Promise<ActionResult> }
-  // history: ActionResult[]
+  on: { [event: string]: (result: ActionResult, game: Game) => Promise<ActionResult | void> }
   tags: { [tag: string]: unknown } // what has this particular instance done? for storyline purposes
   inventory: Item[] // items at position 0 and 1 are in right and left hands, respectively
 }
 
 export type ActionResult = {
-  verb: "pending" | "stopped" | "rested" | "opened" | "woke" | "moved" | "bumped" | "slept" | "fell asleep"
+  verb:
+    | "pending"
+    | "stopped"
+    | "rested"
+    | "opened"
+    | "woke"
+    | "moved"
+    | "bumped"
+    | "slept"
+    | "fell asleep"
+    | "discovered"
   tile?: Tile
   startTime?: number
   endTime?: number

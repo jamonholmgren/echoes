@@ -9,7 +9,8 @@ export async function open(actor: Actor, destinationTile: Tile, game: Game): Pro
   // play the opening door sound
   if (game.sound) playAudio(`door`, { volume: 0.2 })
 
-  game.me.mood = "thinking"
+  // maybe?
+  if (actor === game.me) actor.mood = "thinking"
 
   return { verb: "opened", tile: destinationTile }
 }
