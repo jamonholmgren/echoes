@@ -1,7 +1,7 @@
 import { type Props, print, cursor, gray, ask, yellow, delay, inputKey } from "bluebun"
-import type { Actor, Game } from "../lib/types"
+import type { Actor, Game } from "../types"
 import { map } from "../maps/dungeon"
-import { cancelAllAudio } from "../lib/playAudio"
+import { cancelAllAudio } from "../audio/playAudio"
 import { chooseKey, getErrors, logError } from "../lib/utils"
 import { makeGoblin } from "../actors/goblin"
 import { gameLoop } from "../gameplay/gameLoop"
@@ -60,7 +60,7 @@ export default {
       // but they're also just a normal actor in some ways
       actors: [character, makeGoblin({ name: "Guard", x: 12, y: 2 })],
       // bookmark the top left corner of the map, which will be our game screen starting point
-      startPos: { cols: 1, rows: 1 },
+      startLoc: { x: 1, y: 1 },
       interfaceWidth,
       interfaceHeight,
       viewWidth: 40,
@@ -123,6 +123,6 @@ export default {
 
     cursor.hide().clearScreen()
 
-    await gameLoop(game, props)
+    await gameLoop(game)
   },
 }

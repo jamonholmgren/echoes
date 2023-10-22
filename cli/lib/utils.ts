@@ -1,6 +1,6 @@
 import os from "os"
 import path from "path"
-import { Actor, Game, type GameMap } from "./types"
+import { Actor, Game, type GameMap } from "../types"
 import { choose, inputKeys } from "bluebun"
 
 export function appdir() {

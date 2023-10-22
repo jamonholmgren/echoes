@@ -1,4 +1,4 @@
-import { ActionResult, Actor, Game } from "../lib/types"
+import { ActionResult, Actor, Game } from "../types"
 
 export async function sleep(actor: Actor, _game: Game): Promise<ActionResult> {
   const startTime = actor.time

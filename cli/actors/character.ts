@@ -1,4 +1,4 @@
-import type { Actor } from "../lib/types"
+import type { Actor } from "../types"
 import { chooseKey, waitSpace } from "../lib/utils"
 import { inputKey, delay, gray } from "bluebun"
 import { handleInput } from "../gameplay/handleInput"

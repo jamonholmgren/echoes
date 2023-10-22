@@ -1,5 +1,5 @@
-import type { ActionResult, Actor, Game, Mood } from "../lib/types"
-import { playAudio } from "../lib/playAudio"
+import type { ActionResult, Actor, Game, Mood } from "../types"
+import { playAudio } from "../audio/playAudio"
 import { chooseOne, distance } from "../lib/utils"
 import { open } from "./open"
 import { wake } from "./wake"

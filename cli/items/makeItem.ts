@@ -1,4 +1,4 @@
-import { Item } from "../lib/types"
+import { Item } from "../types"
 
 export function makeItem(props: Partial<Item>): Item {
   return {

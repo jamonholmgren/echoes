@@ -1,4 +1,4 @@
-import type { Actor } from "../lib/types"
+import type { Actor } from "../types"
 import { wander } from "../actions/wander"
 import { follow } from "../actions/follow"
 import { sleep } from "../actions/sleep"

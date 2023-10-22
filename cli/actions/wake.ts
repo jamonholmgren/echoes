@@ -1,5 +1,5 @@
 import { dialogSpace } from "../lib/dialog"
-import { ActionResult, Actor, Game } from "../lib/types"
+import { ActionResult, Actor, Game } from "../types"
 
 export async function wake(actor: Actor, game: Game): Promise<ActionResult> {
   actor.time += actor.speed

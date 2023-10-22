@@ -19,6 +19,7 @@ export const moods = {
   laughing: "😆",
   dead: "💀",
 }
+
 export type Mood = keyof typeof moods
 
 export const races = {
@@ -26,6 +27,11 @@ export const races = {
   goblin: "👹",
 }
 export type Race = keyof typeof races
+
+export type Loc = {
+  x: number
+  y: number
+}
 
 export type Game = {
   me: Actor
@@ -35,7 +41,7 @@ export type Game = {
   interfaceHeight: number // total terminal height we are working with
   viewWidth: number // width of the map we are showing (x2 for character width)
   viewHeight: number // height of the map we are showing
-  startPos: CursorPos
+  startLoc: Loc
   sound: boolean
 }
 

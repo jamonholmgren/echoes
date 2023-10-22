@@ -1,4 +1,4 @@
-import type { Actor, Game, ActionResult } from "../lib/types"
+import type { Actor, Game, ActionResult } from "../types"
 import { chooseOne } from "../lib/utils"
 import { move } from "./move"
 import { wake } from "./wake"

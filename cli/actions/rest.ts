@@ -1,4 +1,4 @@
-import { ActionResult, Actor, Game } from "../lib/types"
+import { ActionResult, Actor, Game } from "../types"
 
 export async function rest(actor: Actor, game: Game): Promise<ActionResult> {
   actor.time += actor.speed

@@ -1,5 +1,5 @@
 import { delay } from "bluebun"
-import { ActionResult, Game } from "../lib/types"
+import { ActionResult, Game } from "../types"
 import { rest } from "../actions/rest"
 import { dialogSpace } from "../lib/dialog"
 import { guardActorTime } from "../lib/guards"

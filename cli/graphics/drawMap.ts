@@ -10,7 +10,7 @@ import {
   ansiColors,
   bgColorRGBStart,
 } from "bluebun"
-import { type Game, moods, races, tileTypes, itemTypes } from "./types"
+import { type Game, moods, races, tileTypes, itemTypes } from "../types"
 
 // print the map (assumes it's against the left side of the screen always)
 export function drawMap(game: Game) {

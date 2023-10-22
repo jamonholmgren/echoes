@@ -1,5 +1,5 @@
 import { CursorPos, cursor, gray, inputKey, stripANSI } from "bluebun"
-import { type Game } from "./types"
+import { type Game } from "../types"
 import { waitSpace } from "./utils"
 
 export function dialog(game: Game, lines: string[]) {
@@ -9,8 +9,8 @@ export function dialog(game: Game, lines: string[]) {
   const mapViewportWidth = game.viewWidth * 2
   const mapViewportHeight = game.viewHeight
 
-  const left = Math.ceil((mapViewportWidth - dialogWidth) / 2) + game.startPos.cols
-  const top = Math.ceil((mapViewportHeight - dialogHeight) / 2) + game.startPos.rows
+  const left = Math.ceil((mapViewportWidth - dialogWidth) / 2) + game.startLoc.x
+  const top = Math.ceil((mapViewportHeight - dialogHeight) / 2) + game.startLoc.y
 
   // draw the box
   cursor.goto({ cols: left, rows: top }).write("┌" + "─".repeat(dialogWidth) + "┐")

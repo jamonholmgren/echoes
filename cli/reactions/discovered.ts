@@ -1,4 +1,4 @@
-import type { ActionResult, Game, Tile } from "../lib/types"
+import type { ActionResult, Game, Tile } from "../types"
 
 export async function discovered(tile: Tile, game: Game): Promise<ActionResult> {
   const t = tile.type

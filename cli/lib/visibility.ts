@@ -1,5 +1,5 @@
 import { TORCH_RADIUS } from "../gameplay/constants"
-import { solidTiles, type Game, type GameMap, type Tile } from "./types"
+import { solidTiles, type Game, type GameMap, type Tile } from "../types"
 import { distance } from "./utils"
 
 export function canSee(map: GameMap, x0: number, y0: number, x1: number, y1: number, maxDistance: number): boolean {
@@ -70,21 +70,36 @@ export function visibleTiles(game: Game) {
       let isVisible = canSee(game.map, me.x, me.y, tile.x, tile.y, eyesight)
 
       if (!isVisible) {
+        // first, are any of its directly adjacent neighbors visible, AND are
+        // directly horizontally or vertically aligned with the player?
+        // this helps us see down hallway walls much more naturally
+        if (Math.abs(tile.x - me.x) === 1 || Math.abs(tile.y - me.y) === 1) {
+          const north = game.map.tiles[tile.y - 1]?.[tile.x]
+          const south = game.map.tiles[tile.y + 1]?.[tile.x]
+          const east = game.map.tiles[tile.y]?.[tile.x + 1]
+          const west = game.map.tiles[tile.y]?.[tile.x - 1]
+
+          isVisible ||= north && canSee(game.map, me.x, me.y, north?.x ?? 0, north?.y ?? 0, eyesight)
+          isVisible ||= south && canSee(game.map, me.x, me.y, south?.x ?? 0, south?.y ?? 0, eyesight)
+          isVisible ||= east && canSee(game.map, me.x, me.y, east?.x ?? 0, east?.y ?? 0, eyesight)
+          isVisible ||= west && canSee(game.map, me.x, me.y, west?.x ?? 0, west?.y ?? 0, eyesight)
+        }
+
         // if we can't see it directly line-of-sight, then we will
         // check from the 4 corners around the player, allowing us to
         // see around corners better -- more natural lighting
 
         for (let ny = -1; ny <= 1; ny += 2) {
+          if (isVisible) break
           for (let nx = -1; nx <= 1; nx += 2) {
+            if (isVisible) break
+
             const dirX = Math.sign(x)
             const dirY = Math.sign(y)
             const nearTile = game.map.tiles[me.y + dirY]?.[me.x + dirX]
 
             isVisible = nearTile && canSee(game.map, nearTile.x, nearTile.y, tile.x, tile.y, eyesight)
-
-            if (isVisible) break
           }
-          if (isVisible) break
         }
       }
 

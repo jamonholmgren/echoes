@@ -1,5 +1,5 @@
-import { playAudio } from "../lib/playAudio"
-import { ActionResult, Actor, Game, Tile } from "../lib/types"
+import { playAudio } from "../audio/playAudio"
+import { ActionResult, Actor, Game, Tile } from "../types"
 
 export async function open(actor: Actor, destinationTile: Tile, game: Game): Promise<ActionResult> {
   actor.time += actor.speed

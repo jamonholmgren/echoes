@@ -1,4 +1,4 @@
-import type { Actor, ActionResult, Game } from "./types"
+import type { Actor, ActionResult, Game } from "../types"
 import { cursor } from "bluebun"
 import { logError } from "./utils"
 

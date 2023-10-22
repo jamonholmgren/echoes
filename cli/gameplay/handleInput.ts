@@ -1,6 +1,6 @@
 import { move } from "../actions/move"
 import { rest } from "../actions/rest"
-import { ActionResult, Game } from "../lib/types"
+import { ActionResult, Game } from "../types"
 
 export async function handleInput(k: string, game: Game) {
   let result: ActionResult = { verb: "pending", tile: undefined }

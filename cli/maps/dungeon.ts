@@ -1,5 +1,5 @@
 import { WALL_TORCH_RADIUS } from "../gameplay/constants"
-import { tileTypes, type GameMap, type Tile } from "../lib/types"
+import { tileTypes, type GameMap, type Tile } from "../types"
 import { distance, getTilesAround, keys } from "../lib/utils"
 import { canSee } from "../lib/visibility"
 

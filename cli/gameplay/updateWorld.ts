@@ -1,4 +1,4 @@
-import { Game } from "../lib/types"
+import { Game } from "../types"
 import { visibleTiles } from "../lib/visibility"
 
 export async function updateWorld(game: Game) {
