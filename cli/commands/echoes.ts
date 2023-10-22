@@ -101,7 +101,7 @@ export default {
 
     // add every character to the tile they are standing on
     game.actors.forEach((actor) => {
-      const tile = game.map.tiles[actor.y][actor.x]
+      const tile = game.map.tiles[actor.y]?.[actor.x]
 
       if (!tile) {
         logError(`Actor ${actor.name} is not on a tile! This is a bug.`)

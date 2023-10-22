@@ -2,12 +2,6 @@
   "name": "echoes",
   "license": "none",
   "version": "0.0.1",
-  "devDependencies": {
-    "bun-types": "latest"
-  },
-  "peerDependencies": {
-    "typescript": "^5.0.0"
-  },
   "bin": {
     "echoes": "./echoes"
   },
@@ -15,6 +9,10 @@
   "type": "module",
   "dependencies": {
     "bluebun": "latest"
+  },
+  "devDependencies": {
+    "bun-types": "latest",
+    "typescript": "latest"
   },
   "prettier": {
     "semi": false,

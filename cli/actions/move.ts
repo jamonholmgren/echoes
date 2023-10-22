@@ -8,14 +8,14 @@ export async function move(actor: Actor, mx: number, my: number, game: Game): Pr
   if (actor.mood === "sleeping") return wake(actor, game)
 
   // get the current tile
-  const currentTile = game.map.tiles[actor.y][actor.x]
+  const currentTile = game.map.tiles[actor.y]?.[actor.x]
+  if (!currentTile) return { verb: "pending", tile: currentTile }
 
   // try to move into the square
   const destinationX = actor.x + mx
   const destinationY = actor.y + my
 
-  const destinationTile = game.map.tiles[destinationY][destinationX]
-
+  const destinationTile = game.map.tiles[destinationY]?.[destinationX]
   if (!destinationTile) return { verb: "pending", tile: destinationTile }
 
   // if there's another actor there return that

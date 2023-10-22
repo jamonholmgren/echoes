@@ -1,34 +1,32 @@
-import { delay } from "bluebun"
 import { move } from "../actions/move"
-import { open } from "../actions/open"
 import { dialogSpace } from "../lib/dialog"
 import { drawMap } from "../graphics/drawMap"
 import { Game } from "../types"
-import { getActorNamed, getTile, getVisibleActors, getVisibleTile, logError } from "../lib/utils"
+import { getActorNamed, getTile, logError } from "../lib/utils"
 import { makeItem } from "../items/makeItem"
 
 export async function storyline(game: Game) {
   const me = game.me
 
-  if (!me.tags.start) {
+  if (!me.storyline.start) {
     drawMap(game)
     await dialogSpace(game, [
       "A single candle flickers on the wall nearby.",
       "As you look around, you realize you are in a dungeon cell.",
       "You see a door on one wall. The cell is empty otherwise.",
     ])
-    return (me.tags.start = true)
+    return (me.storyline.start = true)
   }
 
-  if (!me.tags.guardKnock) {
+  if (!me.storyline.guardKnock) {
     await dialogSpace(game, [
       "Suddenly, a voice booms out from behind the door.",
       `"GET UP, WRETCHES! BACK TO THE MINES FOR YOU!"`,
     ])
-    return (me.tags.guardKnock = true)
+    return (me.storyline.guardKnock = true)
   }
 
-  if (!me.tags.guardOpen) {
+  if (!me.storyline.guardOpen) {
     const door = game.map.tiles[3][12]
     if (!door || door.type !== "door") {
       logError("Couldn't get the closest door! It was a " + door.type)
@@ -39,10 +37,10 @@ export async function storyline(game: Game) {
 
     await dialogSpace(game, ["The door bursts open."])
 
-    return (me.tags.guardOpen = true)
+    return (me.storyline.guardOpen = true)
   }
 
-  if (!me.tags.guardShow) {
+  if (!me.storyline.guardShow) {
     const guard = getActorNamed(game, "Guard")
     await move(guard, 0, 1, game)
     await move(guard, 0, 1, game)
@@ -50,10 +48,10 @@ export async function storyline(game: Game) {
 
     await dialogSpace(game, ["A hulking guard stands there.", `"YOU! GET UP!"`])
 
-    return (me.tags.guardShow = true)
+    return (me.storyline.guardShow = true)
   }
 
-  if (!me.tags.guardGivePickaxe) {
+  if (!me.storyline.guardGivePickaxe) {
     const guard = getActorNamed(game, "Guard")
 
     let tile = getTile(game.map, { x: me.x, y: me.y - 1 })
@@ -84,6 +82,30 @@ export async function storyline(game: Game) {
       `"TIME TO GO MINING! GRAB A CANDLE."`,
     ])
 
-    return (me.tags.guardGivePickaxe = true)
+    return (me.storyline.guardGivePickaxe = true)
+  }
+
+  if (me.storyline.guardLeave === 0) {
+    const guard = getActorNamed(game, "Guard")
+    await move(guard, 0, -1, game)
+    drawMap(game)
+
+    await dialogSpace(game, [`The guard leaves.`])
+
+    return (me.storyline.guardLeave = 1)
+  }
+
+  if (me.storyline.guardLeave >= 1 && me.storyline.guardLeave <= 4) {
+    const guardPath = [
+      [0, -1],
+      [0, -1],
+      [1, 0],
+      [1, 0],
+    ]
+    const guard = getActorNamed(game, "Guard")
+    const mx = guardPath[me.storyline.guardLeave - 1][0]
+    const my = guardPath[me.storyline.guardLeave - 1][1]
+    await move(guard, mx, my, game)
+    return (me.storyline.guardLeave += 1)
   }
 }

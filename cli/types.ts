@@ -75,10 +75,6 @@ export const tileTypes = {
     tile: "\\",
     draw: "🚪",
   },
-  torch: {
-    tile: "☼",
-    draw: "🕯",
-  },
 } as const
 
 export type TileType = keyof typeof tileTypes | "unknown"
@@ -99,7 +95,7 @@ export type Tile = {
 export const itemTypes = {
   torch: {
     tile: "☼",
-    draw: "🕯",
+    draw: "🕯 ",
   },
   sword: {
     tile: "┼",
@@ -140,14 +136,11 @@ export const itemTypes = {
 } as const
 
 export type Item = {
-  x: number
-  y: number
   name: string
   type: keyof typeof itemTypes | "unknown"
   quantity: number
   discovered: boolean
-  tile?: Tile
-  actor?: Actor
+  owner?: Tile | Actor // on the floor or in someone's inventory
 }
 
 export type Actor = {
@@ -165,7 +158,7 @@ export type Actor = {
   time: number // what my current tick is
   act?: (game: Game) => Promise<ActionResult>
   on: { [event: string]: (result: ActionResult, game: Game) => Promise<ActionResult | void> }
-  tags: { [tag: string]: unknown } // what has this particular instance done? for storyline purposes
+  storyline?: Storyline
   inventory: Item[] // items at position 0 and 1 are in right and left hands, respectively
 }
 
@@ -185,3 +178,15 @@ export type ActionResult = {
   startTime?: number
   endTime?: number
 }
+
+export const storyline = {
+  firstWake: false,
+  start: false,
+  guardKnock: false,
+  guardOpen: false,
+  guardShow: false,
+  guardGivePickaxe: false,
+  guardLeave: 0,
+}
+
+export type Storyline = typeof storyline

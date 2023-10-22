@@ -1,6 +1,6 @@
 import { WALL_TORCH_RADIUS } from "../gameplay/constants"
-import { tileTypes, type GameMap, type Tile } from "../types"
-import { distance, getTilesAround, keys } from "../lib/utils"
+import { tileTypes, type GameMap, type Tile, itemTypes, TileType, Item } from "../types"
+import { getTilesAround, keys } from "../lib/utils"
 import { canSee } from "../lib/visibility"
 
 const tileTypeNames = keys(tileTypes)
@@ -30,14 +30,36 @@ const tiles = `
   .map((row) => row.split(""))
   .map((row, y) =>
     row.map((tile, x) => {
+      let type: TileType = "unknown"
+
+      // ffs typescript
+      const itemType = Object.keys(itemTypes).find((k: any) => (itemTypes as any)[k].tile === tile) as Item["type"]
+
+      if (itemType) {
+        // this is an item specification, so it's just a floor here
+        type = "floor"
+      } else {
+        type = tileTypeNames.find((k) => tileTypes[k].tile === tile) || "unknown"
+      }
+
       const t: Tile = {
         x,
         y,
-        type: tileTypeNames.find((t) => tileTypes[t].tile === tile) || "unknown",
+        type,
         discovered: false,
         items: [],
         actor: undefined,
         lit: false,
+      }
+
+      if (itemType) {
+        t.items.push({
+          name: itemType,
+          type: itemType,
+          quantity: 1,
+          discovered: false,
+          owner: t,
+        })
       }
 
       return t
@@ -46,17 +68,16 @@ const tiles = `
 
 export function calculateStaticMapLighting(tiles: Tile[][]) {
   // pre-calculate lighting
-  for (let y = 0; y < tiles.length; y++) {
-    for (let x = 0; x < tiles[y].length; x++) {
-      const tile = tiles[y][x]
+  tiles.forEach((row, y) => {
+    row.forEach((tile, x) => {
       // find any close (within 3) lighting sources
       const tilesAround = getTilesAround({ tiles, visible: [] }, { x, y }, WALL_TORCH_RADIUS)
-      const lit = tilesAround.some(
-        (t) => t.type === "torch" && canSee({ tiles, visible: [] }, t.x, t.y, x, y, WALL_TORCH_RADIUS)
+      tile.lit = tilesAround.some(
+        (t) =>
+          t.items.find((i) => i.type === "torch") && canSee({ tiles, visible: [] }, t.x, t.y, x, y, WALL_TORCH_RADIUS)
       )
-      tile.lit = lit
-    }
-  }
+    })
+  })
 }
 
 calculateStaticMapLighting(tiles)

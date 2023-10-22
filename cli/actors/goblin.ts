@@ -19,7 +19,6 @@ export function makeGoblin(props: Partial<Actor>): Actor {
     // history: [],
     visible: false,
     discovered: false,
-    tags: {},
     async act(game) {
       const tile = game.map.tiles[this.y][this.x]
 

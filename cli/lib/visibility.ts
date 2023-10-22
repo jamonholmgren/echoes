@@ -79,10 +79,10 @@ export function visibleTiles(game: Game) {
           const east = game.map.tiles[tile.y]?.[tile.x + 1]
           const west = game.map.tiles[tile.y]?.[tile.x - 1]
 
-          isVisible ||= north && canSee(game.map, me.x, me.y, north?.x ?? 0, north?.y ?? 0, eyesight)
-          isVisible ||= south && canSee(game.map, me.x, me.y, south?.x ?? 0, south?.y ?? 0, eyesight)
-          isVisible ||= east && canSee(game.map, me.x, me.y, east?.x ?? 0, east?.y ?? 0, eyesight)
-          isVisible ||= west && canSee(game.map, me.x, me.y, west?.x ?? 0, west?.y ?? 0, eyesight)
+          isVisible ||= canSee(game.map, me.x, me.y, north?.x ?? 0, north?.y ?? 0, eyesight)
+          isVisible ||= canSee(game.map, me.x, me.y, south?.x ?? 0, south?.y ?? 0, eyesight)
+          isVisible ||= canSee(game.map, me.x, me.y, east?.x ?? 0, east?.y ?? 0, eyesight)
+          isVisible ||= canSee(game.map, me.x, me.y, west?.x ?? 0, west?.y ?? 0, eyesight)
         }
 
         // if we can't see it directly line-of-sight, then we will
@@ -98,7 +98,7 @@ export function visibleTiles(game: Game) {
             const dirY = Math.sign(y)
             const nearTile = game.map.tiles[me.y + dirY]?.[me.x + dirX]
 
-            isVisible = nearTile && canSee(game.map, nearTile.x, nearTile.y, tile.x, tile.y, eyesight)
+            isVisible ||= canSee(game.map, nearTile?.x || 0, nearTile?.y || 0, tile.x, tile.y, eyesight)
           }
         }
       }

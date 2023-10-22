@@ -11,6 +11,7 @@ import {
   bgColorRGBStart,
 } from "bluebun"
 import { type Game, moods, races, tileTypes, itemTypes } from "../types"
+import { logError } from "../lib/utils"
 
 // print the map (assumes it's against the left side of the screen always)
 export function drawMap(game: Game) {
@@ -92,7 +93,8 @@ export function drawMap(game: Game) {
         continue
       }
 
-      if (isVisible && tile.items.length > 0) {
+      // Tile has an item, so draw that instead
+      if (isVisible && tile.items[0]) {
         const firstItem = tile.items[0]
         const emoji = itemTypes[firstItem.type]?.draw
         if (emoji) {
@@ -120,9 +122,6 @@ export function drawMap(game: Game) {
       } else if (tile.type === "door") {
         // door
         line += "🚪"
-      } else if (tile.type === "torch") {
-        // light
-        line += "🕯 "
       } else if (tile.type === "openDoor") {
         // open door
         line += "🚪"
@@ -155,6 +154,10 @@ export function drawMap(game: Game) {
 let hudPos: CursorPos
 function drawHUD(game: Game) {
   const mapStart = cursor.bookmarks["mapstart"]
+  if (!mapStart) {
+    logError("mapstart bookmark not found")
+    process.exit(1)
+  }
 
   const c = game.me
 
@@ -171,5 +174,5 @@ function drawHUD(game: Game) {
 }
 
 function hud(row: number, s: string) {
-  cursor.goto(hudPos).down(row).write(s)
+  cursor.goto(hudPos).down(row).write(s.padEnd(20))
 }

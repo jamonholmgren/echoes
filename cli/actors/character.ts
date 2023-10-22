@@ -1,4 +1,4 @@
-import type { Actor } from "../types"
+import { storyline, type Actor } from "../types"
 import { chooseKey, waitSpace } from "../lib/utils"
 import { inputKey, delay, gray } from "bluebun"
 import { handleInput } from "../gameplay/handleInput"
@@ -22,7 +22,7 @@ export function makeCharacter(props: Partial<Actor>): Actor {
     time: 0,
     discovered: true,
     visible: true,
-    tags: {},
+    storyline,
     inventory: [],
     async act(game) {
       while (true) {
@@ -51,21 +51,44 @@ export function makeCharacter(props: Partial<Actor>): Actor {
         if (result.verb === "pending") continue
 
         // event hooks
-        if (this.on[result.verb]) await this.on[result.verb](result, game)
+        const eventHook = this.on[result.verb]
+        if (eventHook) await eventHook(result, game)
 
         return result
       }
     },
     on: {
       woke: async (result, game) => {
-        if (result.verb === "woke" && !game.me.tags.firstWake) {
-          game.me.tags.firstWake = true
+        if (result.verb === "woke" && !game.me.storyline.firstWake) {
+          game.me.storyline.firstWake = true
           await dialogSpace(game, ["You wake up."])
         }
         return result
       },
       discovered: async (result, game) => {
         if (result.tile) discovered(result.tile, game)
+      },
+      moved: async (result, game) => {
+        // check if we moved onto a tile with an item
+        if (result.tile && result.tile.items.length > 0) {
+          const tile = result.tile!
+
+          tile.items.forEach(async (item, i) => {
+            if (item.discovered) return
+
+            item.discovered = true
+
+            dialog(game, [`You found a ${gray(item.name)}.`, `Pick it up? (y/n)`])
+            const pickup = await chooseKey(["y", "n"])
+            if (pickup !== "y") return
+
+            game.me.inventory.push(item)
+
+            // remove the item from the tile
+            tile.items.splice(i, 1)
+            item.owner = game.me
+          })
+        }
       },
     },
     ...props,
