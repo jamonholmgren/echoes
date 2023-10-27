@@ -158,7 +158,7 @@ export type Actor = {
   time: number // what my current tick is
   act?: (game: Game) => Promise<ActionResult>
   on: { [event: string]: (result: ActionResult, game: Game) => Promise<ActionResult | void> }
-  storyline?: Storyline
+  storyline: Storyline
   inventory: Item[] // items at position 0 and 1 are in right and left hands, respectively
 }
 

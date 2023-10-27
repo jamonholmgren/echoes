@@ -12,8 +12,8 @@ export async function gameLoop(game: Game) {
 
   if (game.sound) playAudio(`music`, { volume: 0.1, repeat: true })
 
-  // first, it's just the character who is visible
-  game.map.visible = [game.map.tiles[game.startLoc.y][game.startLoc.x]]
+  // at first, it's just the character who is visible
+  game.map.visible = [game.me.tile!]
 
   // gameloop
   let runawayLoopProtection = 0

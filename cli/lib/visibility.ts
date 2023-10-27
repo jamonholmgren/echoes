@@ -44,7 +44,7 @@ export function visibleTiles(game: Game) {
   const visTiles: Tile[] = []
 
   // right or left hand has a torch?
-  const hasTorch = me.inventory[0]?.type === "torch" || me.inventory[1]?.type === "torch"
+  const hasTorch = true //me.inventory[0]?.type === "torch" || me.inventory[1]?.type === "torch"
 
   for (let y = -eyesight; y <= eyesight; y++) {
     for (let x = -eyesight; x <= eyesight; x++) {
@@ -70,21 +70,6 @@ export function visibleTiles(game: Game) {
       let isVisible = canSee(game.map, me.x, me.y, tile.x, tile.y, eyesight)
 
       if (!isVisible) {
-        // first, are any of its directly adjacent neighbors visible, AND are
-        // directly horizontally or vertically aligned with the player?
-        // this helps us see down hallway walls much more naturally
-        if (Math.abs(tile.x - me.x) === 1 || Math.abs(tile.y - me.y) === 1) {
-          const north = game.map.tiles[tile.y - 1]?.[tile.x]
-          const south = game.map.tiles[tile.y + 1]?.[tile.x]
-          const east = game.map.tiles[tile.y]?.[tile.x + 1]
-          const west = game.map.tiles[tile.y]?.[tile.x - 1]
-
-          isVisible ||= canSee(game.map, me.x, me.y, north?.x ?? 0, north?.y ?? 0, eyesight)
-          isVisible ||= canSee(game.map, me.x, me.y, south?.x ?? 0, south?.y ?? 0, eyesight)
-          isVisible ||= canSee(game.map, me.x, me.y, east?.x ?? 0, east?.y ?? 0, eyesight)
-          isVisible ||= canSee(game.map, me.x, me.y, west?.x ?? 0, west?.y ?? 0, eyesight)
-        }
-
         // if we can't see it directly line-of-sight, then we will
         // check from the 4 corners around the player, allowing us to
         // see around corners better -- more natural lighting
@@ -94,9 +79,7 @@ export function visibleTiles(game: Game) {
           for (let nx = -1; nx <= 1; nx += 2) {
             if (isVisible) break
 
-            const dirX = Math.sign(x)
-            const dirY = Math.sign(y)
-            const nearTile = game.map.tiles[me.y + dirY]?.[me.x + dirX]
+            const nearTile = game.map.tiles[me.y + ny]?.[me.x + nx]
 
             isVisible ||= canSee(game.map, nearTile?.x || 0, nearTile?.y || 0, tile.x, tile.y, eyesight)
           }

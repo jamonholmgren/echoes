@@ -4,6 +4,7 @@ import { inputKey, delay, gray } from "bluebun"
 import { handleInput } from "../gameplay/handleInput"
 import { dialog, dialogSpace } from "../lib/dialog"
 import { discovered } from "../reactions/discovered"
+import { wake } from "../actions/wake"
 
 export function makeCharacter(props: Partial<Actor>): Actor {
   // half second delay between movement inputs on purpose
@@ -25,6 +26,8 @@ export function makeCharacter(props: Partial<Actor>): Actor {
     storyline,
     inventory: [],
     async act(game) {
+      if (!storyline.firstWake) return wake(this, game)
+
       while (true) {
         const k = await inputKey()
 
@@ -59,7 +62,7 @@ export function makeCharacter(props: Partial<Actor>): Actor {
     },
     on: {
       woke: async (result, game) => {
-        if (result.verb === "woke" && !game.me.storyline.firstWake) {
+        if (!game.me.storyline.firstWake) {
           game.me.storyline.firstWake = true
           await dialogSpace(game, ["You wake up."])
         }

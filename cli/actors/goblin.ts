@@ -1,4 +1,4 @@
-import type { Actor } from "../types"
+import { storyline, type Actor } from "../types"
 import { wander } from "../actions/wander"
 import { follow } from "../actions/follow"
 import { sleep } from "../actions/sleep"
@@ -19,8 +19,9 @@ export function makeGoblin(props: Partial<Actor>): Actor {
     // history: [],
     visible: false,
     discovered: false,
+    storyline,
     async act(game) {
-      const tile = game.map.tiles[this.y][this.x]
+      const tile = this.tile!
 
       // until the goblin is discovered, it just sleeps
       if (!tile.discovered) return sleep(this, game)

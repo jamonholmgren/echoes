@@ -1,7 +1,7 @@
 import os from "os"
 import path from "path"
 import { Actor, Game, type GameMap } from "../types"
-import { choose, inputKeys } from "bluebun"
+import { inputKeys } from "bluebun"
 
 export function appdir() {
   const homedir = os.homedir()
@@ -53,6 +53,15 @@ export function getTile(map: GameMap, loc: Loc) {
   return map.tiles[loc.y]?.[loc.x]
 }
 
+export function getTileReq(map: GameMap, loc: Loc) {
+  const tile = getTile(map, loc)
+  if (!tile) {
+    logError(`No tile at ${loc.x},${loc.y}! This is required for gameplay`)
+    process.exit(1)
+  }
+  return tile
+}
+
 export function distance(pos1: Loc, pos2: Loc): number {
   const dx = pos1.x - pos2.x
   const dy = pos1.y - pos2.y
@@ -60,7 +69,7 @@ export function distance(pos1: Loc, pos2: Loc): number {
 }
 
 export function chooseOne<T>(arr: T[]): T {
-  return arr[Math.floor(Math.random() * arr.length)]
+  return arr[Math.floor(Math.random() * arr.length)]!
 }
 
 export function alternateColors(t: string, color1: (s: string) => string, color2: (s: string) => string): string {

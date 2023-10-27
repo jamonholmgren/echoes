@@ -7,8 +7,6 @@ export async function discovered(tile: Tile, game: Game): Promise<ActionResult> 
     me.mood = "surprised"
   } else if (t === "openDoor") {
     me.mood = "surprised"
-  } else if (t === "torch") {
-    me.mood = "thinking"
   } else {
     // me.mood = "neutral"
   }

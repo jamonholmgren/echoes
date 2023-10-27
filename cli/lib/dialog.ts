@@ -16,7 +16,7 @@ export function dialog(game: Game, lines: string[]) {
   cursor.goto({ cols: left, rows: top }).write("┌" + "─".repeat(dialogWidth) + "┐")
   for (let i = 0; i < dialogHeight - 2; i++) {
     const text = lines[i]
-    const padding = " ".repeat(dialogWidth - 2 - stripANSI(text).length)
+    const padding = " ".repeat(dialogWidth - 2 - stripANSI(text || "").length)
     cursor.goto({ cols: left, rows: top + 1 + i }).write("│" + "  " + text + padding + "│")
   }
   cursor.goto({ cols: left, rows: top + dialogHeight - 1 }).write("└" + "─".repeat(dialogWidth) + "┘")

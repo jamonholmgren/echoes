@@ -27,9 +27,9 @@ export async function storyline(game: Game) {
   }
 
   if (!me.storyline.guardOpen) {
-    const door = game.map.tiles[3][12]
+    const door = game.map.tiles[3]?.[12]
     if (!door || door.type !== "door") {
-      logError("Couldn't get the closest door! It was a " + door.type)
+      logError("Couldn't get the closest door! It was a " + door?.type || "'not found'")
       process.exit(1)
     }
     door.type = "openDoor"
@@ -52,13 +52,11 @@ export async function storyline(game: Game) {
   }
 
   if (!me.storyline.guardGivePickaxe) {
-    const guard = getActorNamed(game, "Guard")
-
     let tile = getTile(game.map, { x: me.x, y: me.y - 1 })
-    if (tile.type !== "floor") tile = getTile(game.map, { x: me.x, y: me.y + 1 })
-    if (tile.type !== "floor") tile = getTile(game.map, { x: me.x - 1, y: me.y })
-    if (tile.type !== "floor") tile = getTile(game.map, { x: me.x + 1, y: me.y })
-    if (tile.type !== "floor") {
+    if (tile!.type !== "floor") tile = getTile(game.map, { x: me.x, y: me.y + 1 })
+    if (tile!.type !== "floor") tile = getTile(game.map, { x: me.x - 1, y: me.y })
+    if (tile!.type !== "floor") tile = getTile(game.map, { x: me.x + 1, y: me.y })
+    if (!tile || tile!.type !== "floor") {
       logError("Couldn't find a suitable spot to put the pickaxe!")
       process.exit(1)
     }
@@ -66,10 +64,9 @@ export async function storyline(game: Game) {
     const pickaxe = makeItem({
       name: "Rusty Pickaxe",
       type: "pick",
-      tile: tile,
-      x: tile.x,
-      y: tile.y,
       discovered: false,
+      owner: tile,
+      quantity: 1,
     })
 
     tile.items.push(pickaxe)
@@ -103,8 +100,12 @@ export async function storyline(game: Game) {
       [1, 0],
     ]
     const guard = getActorNamed(game, "Guard")
-    const mx = guardPath[me.storyline.guardLeave - 1][0]
-    const my = guardPath[me.storyline.guardLeave - 1][1]
+    const mx = guardPath[me.storyline.guardLeave - 1]?.[0]
+    const my = guardPath[me.storyline.guardLeave - 1]?.[1]
+    if (!mx || !my) {
+      logError("Couldn't get the guard's path!")
+      process.exit(1)
+    }
     await move(guard, mx, my, game)
     return (me.storyline.guardLeave += 1)
   }
